@@ -5,8 +5,6 @@
 
 This is a project to recreate EVM in Python from scratch. Please do not use this in production applications.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 
