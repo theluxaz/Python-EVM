@@ -3,9 +3,7 @@
 ## About The Project
 
 
-This is a project recreate EVM in Python from scratch. Please do not use this in production applications.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+This is a project to recreate EVM in Python from scratch. Please do not use this in production applications.
 
 
 
@@ -40,18 +38,14 @@ To do later.
    const API_KEY = 'ENTER YOUR API';
    ``` -->
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+To do later.
 
 <!-- _For more examples, please refer to the [Documentation](https://example.com)_ -->
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 
@@ -63,15 +57,11 @@ Use this space to show useful examples of how a project can be used. Additional 
 - [ ] Opcodes
 
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- LICENSE -->
 ## License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+Distributed under the MIT License. 
 
 
