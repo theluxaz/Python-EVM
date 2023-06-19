@@ -9,13 +9,13 @@ class Memory:
     bytes_array = bytearray(0)
 
 
-    def store(self, offset: int, value:bytes) -> None:
+    def store(self, offset: int, size:int, value:bytes) -> None:
         return None
 
-    def store8(self, offset: int, value:bytes) -> None:
+    def store8(self, offset: int, size:int, value:bytes) -> None:
         return None
 
-    def load(self, offset: int) -> bytes:
+    def load(self, offset: int, size:int) -> bytes:
         return None
 
     def size(self) -> None:
