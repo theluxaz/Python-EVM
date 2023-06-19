@@ -16,6 +16,7 @@ class Stack:
     def push(self,item):
         self.stack.append(item)
         print(str(self.stack))
+        return item
 
     def pop(self) -> Union[int, bytes]:
         return self.stack.pop()
