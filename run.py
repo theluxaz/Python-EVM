@@ -2,7 +2,10 @@ from executor import Executor
 from opcode_list import opcodes_list
 
 
-hexcode = "6001600201"
+# hexcode = "6001600201"
+
+#Testing if memory works
+hexcode = "60256000526020600051"
 
 def main(bytecode: bytearray ) -> None:
     #Runs code

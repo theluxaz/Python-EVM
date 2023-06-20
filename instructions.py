@@ -1,6 +1,10 @@
 from stack import Stack
 from memory import Memory
 from utils import signed_to_unsigned,unsigned_to_signed
+from eth_hash.auto import keccak
+
+max_value = 2**256 - 1
+max_ceiling = 2**256 
 
 class Instructions:
 
@@ -37,7 +41,7 @@ class Instructions:
         #(a:int, b:int)
         a = self.stack.pop()
         b = self.stack.pop()
-        return self.stack.push(a+b) #possibly add this on this line  & (2*256-1)
+        return self.stack.push(a+b) #possibly add this on this line  & max_value
 
     #OPCODE     GAS
     #02         5  
@@ -45,7 +49,7 @@ class Instructions:
         #(a:int, b:int)
         a = self.stack.pop()
         b = self.stack.pop()
-        return self.stack.push(a*b) #possibly add this on this line  & (2*256-1)
+        return self.stack.push(a*b) #possibly add this on this line  & max_value
 
     #OPCODE     GAS
     #03         3  
@@ -53,7 +57,7 @@ class Instructions:
         #(a:int, b:int)
         a = self.stack.pop()
         b = self.stack.pop()
-        return self.stack.push(a-b) #possibly add this on this line  & (2*256-1)
+        return self.stack.push(a-b) #possibly add this on this line  & max_value
 
     #OPCODE     GAS
     #04         2  
@@ -65,7 +69,7 @@ class Instructions:
         if den == 0:
             return self.stack.push(0)
         else:
-            return self.stack.push(num//den) #possibly add this on this line  & (2*256-1)
+            return self.stack.push(num//den) #possibly add this on this line  & max_value
 
     #OPCODE     GAS
     #05         5  
@@ -86,7 +90,7 @@ class Instructions:
         else:
             result = pos_or_neg * (abs(num) // abs(den))
 
-        return self.stack.push(signed_to_unsigned(result)) #possibly add this on this line  & (2*256-1)
+        return self.stack.push(signed_to_unsigned(result)) #possibly add this on this line  & max_value
 
     #OPCODE     GAS
     #06         5  
@@ -116,7 +120,7 @@ class Instructions:
         if mod == 0:
             result = 0
         else:
-            result = (abs(val) % abs(mod) * pos_or_neg) #possibly add this on this line  & (2*256-1)
+            result = (abs(val) % abs(mod) * pos_or_neg) #possibly add this on this line  & max_value
 
         return self.stack.push(signed_to_unsigned(result))
 
@@ -162,7 +166,7 @@ class Instructions:
         elif(a==1):
             return self.stack.push(0)
         else:
-            #TODO  ADD MODULUS? (3rd parameter in .pow) -> (2**256)
+            #TODO  ADD MODULUS? (3rd parameter in .pow) -> max_ceiling
             return self.stack.push(pow(a**exponent)) 
 
 
@@ -182,7 +186,7 @@ class Instructions:
             testbit = b * 8 + 7
             sign_bit = 1 << testbit
             if x & sign_bit:
-                result = x | ((2**256) - sign_bit)
+                result = x | (max_ceiling - sign_bit)
             else:
                 result = x & (sign_bit - 1)
         else:
@@ -200,102 +204,160 @@ class Instructions:
 
     #OPCODE     GAS
     #10         3  
-    def LT(a:int, b:int) -> int:
+    def LT(self) -> int:
         #LESS THAN
-        return a<b
+        a = self.stack.pop()
+        b = self.stack.pop()
+        return self.stack.push(int(a<b))
 
     #OPCODE     GAS
     #11         3  
-    def GT(a:int, b:int) -> int:
+    def GT(self) -> int:
         #GREATER THAN
-        return a>b
+        a = self.stack.pop()
+        b = self.stack.pop()
+        return self.stack.push(int(a>b))
 
     #OPCODE     GAS
     #12         3  
-    def SLT(a:int, b:int) -> int:
+    def SLT(self) -> int:
         #SIGNED LESS THAN
-        return a<b
+        a = unsigned_to_signed(self.stack.pop())
+        b = unsigned_to_signed(self.stack.pop())
+        return self.stack.push(signed_to_unsigned(int(a<b)))
 
     #OPCODE     GAS
     #13         3  
-    def SGT(a:int, b:int) -> int:
+    def SGT(self) -> int:
         #SIGNED GREATER THAN
-        return a>b
+        a = unsigned_to_signed(self.stack.pop())
+        b = unsigned_to_signed(self.stack.pop())
+        return self.stack.push(signed_to_unsigned(int(a>b)))
 
     #OPCODE     GAS
     #14         3  
-    def EQ(a:int, b:int) -> int:
+    def EQ(self) -> int:
         #EQUAL
-        return a==b
+        a = self.stack.pop()
+        b = self.stack.pop()
+        return self.stack.push(int(a==b))
 
     #OPCODE     GAS
     #15         3  
-    def ISZERO(a:int) -> int:
-        return a==0
+    def ISZERO(self) -> int:
+        a = self.stack.pop()
+        return self.stack.push(int(a==0))
 
     #OPCODE     GAS
     #16         3  
-    def AND(a:int, b:int) -> int:
+    def AND(self) -> bytearray: #TODO figure out return type
         #BITWISE AND
-        return a&b
+        a = self.stack.pop()
+        b = self.stack.pop()
+        return self.stack.push(a&b)
 
 
     #OPCODE     GAS
     #17         3  
-    def OR(a:int, b:int) -> int:
+    def OR(self) -> bytearray: #TODO figure out return type
         #BITWISE OR
-        return a|b
+        a = self.stack.pop()
+        b = self.stack.pop()
+        return self.stack.push(a|b)
 
     #OPCODE     GAS
     #18         3  
-    def XOR(a:int, b:int) -> int:
+    def XOR(self) -> bytearray: #TODO figure out return type
         #BITWISE XOR
-        return a^b
+        a = self.stack.pop()
+        b = self.stack.pop()
+        return self.stack.push(a^b)
 
     #OPCODE     GAS
     #19         3  
-    def NOT(a:int) -> int:
+    def NOT(self) -> bytearray: #TODO figure out return type
         #BITWISE NOT
-        return None #!a
+        a = self.stack.pop()
+        #OR TRY
+        #return self.stack.push(max_value - value)
+        return self.stack.push(~a)
         
 
     #OPCODE     GAS
     #1A         3  
-    def BYTE(i:int,x:bytes) -> int:
+    def BYTE(self)  -> int:
         #offset and byte value
+        #(i:int (position),x:bytes (value))
         #RETRIEVE SINGLE BYTE FROM WORD
-        return None
+        pos = self.stack.pop()
+        val = self.stack.pop()
+
+        if pos >= 32:
+            result = 0
+        else:
+            result = (val // pow(256, 31 - pos)) % 256
+
+        return self.stack.push(result)
 
     #OPCODE     GAS
     #1B         3  
-    def SHL(shift:int,value:bytes) -> bytes:
+    def SHL(self)  -> bytes:
+        #(shift:int (bits),value:bytes(value))
         #SHIFT shift VALUE value to the LEFT
-        return None
+        shift = self.stack.pop()
+        val = self.stack.pop()
+        if(shift> 255):
+            return self.stack.push(0)
+
+        return self.stack.push(val << shift)
 
     #OPCODE     GAS
     #1C         3  
-    def SHR(shift:int,value:bytes) -> bytes:
+    def SHR(self) -> bytes:
+        #(shift:int (bits),value:bytes(value))
         #SHIFT shift VALUE value to the RIGHT
-        return None
+        shift = self.stack.pop()
+        val = self.stack.pop()
+        if(shift> 255):
+            return self.stack.push(0)
 
+        return self.stack.push(val >> shift)
+
+    #UNFINISHED  - More info: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-145.md
+    # Implementation here from EIP https://github.com/ethereum/aleth/pull/4054/files
     #OPCODE     GAS
     #1D         3  
-    def SAR(shift:int,value:bytes) -> bytes:
+    def SAR(self)  -> bytes:
         #SHIFT shift VALUE value to the RIGHT
+        #(shift:int,value:bytes) --- IS SIGNED, similar to previous
         #Shift the bits towards the least significant one. The bits moved before the first one are discarded, 
         #the new bits are set to 0 if the previous most significant bit was 0, otherwise the new bits are set to 1.
-        return None
+        shift = self.stack.pop()
+        val = self.stack.pop()
+        if(shift> 255):
+            return self.stack.push(0)
+        
+        return self.stack.push(val >> shift)
 
 
 
 
-    #Comparison & Bitwise Logic Operations
+
+
+    # Test more, not too sure if correct
+    #Sha3 Hashing Operations
 
     #OPCODE     GAS
     #20         30+   dynamic  
-    def SHA3(offset:int,size:int) -> bytes:
+    def SHA3(self) -> bytes:
+        #(offset:int,size:int)
         #Compute Keccak-256 hash
-        return None
+        offset = self.stack.pop()
+        size = self.stack.pop()
+
+        loaded_value = self.memory.load(offset, size)
+
+        return self.stack.push(keccak(loaded_value))
 
 
 
@@ -476,26 +538,48 @@ class Instructions:
 
     #OPCODE     GAS
     #50         2 
-    def POP(y:bytes):
+    def POP(self):
         #Remove item from stack
-        return None
+        item = self.stack.pop()
+        return item
 
     #OPCODE     GAS
     #51         3 dynamic  
-    def MLOAD(offset:int) -> bytes:
+    def MLOAD(self) -> bytes:
         #Load word from memory
-        return None
+        offset = self.stack.pop()
+        size=32
+        return self.memory.load(offset,size)
 
+    #TODO - STORE BYTES OR INT IN STACK?? CHECK CONVERSION FROM BYTES with .to_bytes
     #OPCODE     GAS
     #52         3 dynamic    
-    def MSTORE(offset:int,value:bytes):
+    def MSTORE(self):
         #Save word to memory
+        offset = self.stack.pop()
+        value = self.stack.pop()
+
+        processed_value = value.to_bytes(32, 'big')
+        
+        print(f"Normal value {value}")
+        # length = len(value) % 32
+        # if length > 0:
+        #     value += bytes(32 - length)
+        print(f"Processed value {processed_value}")
+
+        self.memory.store(offset,processed_value)
+
         return None
 
+    #TODO add validation!!!
     #OPCODE     GAS
     #53         3 dynamic    
-    def MSTORE8(offset:int,value:bytes):
-        #Save byte to memory
+    def MSTORE8(self):
+        #Save word to memory
+        offset = self.stack.pop()
+        value = self.stack.pop()
+
+        self.memory.store8(offset,value)
         return None
 
     #OPCODE     GAS
@@ -531,9 +615,9 @@ class Instructions:
 
     #OPCODE     GAS
     #59         2
-    def MSIZE() -> int:
+    def MSIZE(self) -> int:
         #Get the size of active memory in bytes
-        return None 
+        return self.memory.size() 
         
 
     #OPCODE     GAS

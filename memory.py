@@ -9,14 +9,38 @@ class Memory:
     bytes_array = bytearray(0)
 
 
-    def store(self, offset: int, size:int, value:bytes) -> None:
+    def store(self, offset: int, value:bytearray):
+        word_length = 32
+
+        #TODO refactor
+        #expand memory
+        if((offset+word_length) > len(self.bytes_array)):
+             self.bytes_array.extend(bytearray((offset+word_length)-len(self.bytes_array)))
+             
+
+        for index, byte in enumerate(value):
+                print(f"index {index}")
+                print(f"byte {byte}")
+                self.bytes_array[offset + index] = byte
         return None
 
-    def store8(self, offset: int, size:int, value:bytes) -> None:
+    def store8(self, offset: int, value:bytearray) -> None:
+        word_length = 1
+
+        #TODO refactor
+        #expand memory
+        if((offset+word_length) > len(self.bytes_array)):
+             self.bytes_array.extend(bytearray((offset+word_length)-len(self.bytes_array)))
+             
+
+        self.bytes_array[offset] = value
         return None
 
     def load(self, offset: int, size:int) -> bytes:
-        return None
+        # try memoryview() ??
+        result = self.bytes_array[offset : offset + size]
+        print(result)
+        return result
 
     def size(self) -> None:
         print(f"Byte array is f{len(bytearray)}")

@@ -3,3 +3,7 @@ node_modules
 .encryptedKey.json
 SimpleStorage_sol_*
 .notes.md
+
+__pycache__/
+__pycache__
+*.pyc 
