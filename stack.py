@@ -16,18 +16,28 @@ class Stack:
     def push(self,item):
         self.stack.append(item)
         print(str(self.stack))
+        print(self.stack[0])
+        print(type(self.stack[0]))
         return item
 
     def pop(self) -> Union[int, bytes]:
         return self.stack.pop()
     
     #Duplicate
-    def dup(self,offset:int):
-        self.stack.append(self.stack(len(self._items)- 1 - self.stack(offset)))
+    def duplicate(self,offset:int):
+        item = self.stack[len(self.stack) - offset]
+        self.stack.append(item)  
+        print(str(self.stack))
+        return item
 
     #Swap
     def swap(self,offset:int):
-        item_to_top = self.stack[(len(self._items)- 1 - self.stack(offset))]
+        swap_index = (len(self.stack) -1 - offset)
+        item_to_top = self.stack[swap_index]
         item_to_swap = self.pop()
+        
         self.stack.append(item_to_top)
-        self.stack.insert((len(self._items)- 1 - self.stack(offset)), item_to_swap)
+        del self.stack[swap_index]
+        self.stack.insert((len(self.stack) - offset), item_to_swap)
+        print(str(self.stack))
+        return item_to_top

@@ -658,201 +658,201 @@ class Instructions:
 
     # Push Operations
 
+    #REFACTOR LATER
     #OPCODE     GAS
     #60         3   
-    def PUSH1(self) -> int:
+    def PUSH1(self):
         #Place 1 bytes item on stack
-        self.stack.push(self.executor.processBytecode(1))
-        return None
+        return self.stack.push(self.executor.processBytecode(1))
 
     #OPCODE     GAS
     #61         3   
-    def PUSH2() -> int:
+    def PUSH2(self):
         #Place 2 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(2))
 
     #OPCODE     GAS
     #62         3   
-    def PUSH3() -> int:
+    def PUSH3(self):
         #Place 3 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(3))
 
     #OPCODE     GAS
     #63         3   
-    def PUSH4() -> int:
+    def PUSH4(self):
         #Place 4 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(4))
 
     #OPCODE     GAS
     #64         3   
-    def PUSH5() -> int:
+    def PUSH5(self):
         #Place 5 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(5))
 
     #OPCODE     GAS
     #65         3   
-    def PUSH6() -> int:
+    def PUSH6(self):
         #Place 6 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(6))
 
     #OPCODE     GAS
     #66         3   
-    def PUSH7() -> int:
+    def PUSH7(self):
         #Place 7 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(7))
 
     #OPCODE     GAS
     #67         3   
-    def PUSH8() -> int:
+    def PUSH8(self):
         #Place 8 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(8))
 
     #OPCODE     GAS
     #68         3   
-    def PUSH9() -> int:
+    def PUSH9(self):
         #Place 9 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(9))
 
     #OPCODE     GAS
     #69         3   
-    def PUSH10() -> int:
+    def PUSH10(self):
         #Place 10 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(10))
 
     #OPCODE     GAS
     #6A         3   
-    def PUSH11() -> int:
+    def PUSH11(self):
         #Place 11 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(11))
 
     #OPCODE     GAS
     #6B         3   
-    def PUSH12() -> int:
+    def PUSH12(self):
         #Place 12 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(12))
 
     #OPCODE     GAS
     #6C         3   
-    def PUSH13() -> int:
+    def PUSH13(self):
         #Place 13 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(13))
 
     #OPCODE     GAS
     #6D         3   
-    def PUSH14() -> int:
+    def PUSH14(self):
         #Place 14 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(14))
 
     #OPCODE     GAS
     #6E         3   
-    def PUSH15() -> int:
+    def PUSH15(self):
         #Place 15 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(15))
 
     #OPCODE     GAS
     #6F         3   
-    def PUSH16() -> int:
+    def PUSH16(self):
         #Place 16 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(16))
 
 
     #70s
 
     #OPCODE     GAS
     #70         3   
-    def PUSH17() -> int:
+    def PUSH17(self):
         #Place 17 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(17))
 
     #OPCODE     GAS
     #71         3   
-    def PUSH18() -> int:
+    def PUSH18(self):
         #Place 18 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(18))
 
     #OPCODE     GAS
     #72         3   
-    def PUSH19() -> int:
+    def PUSH19(self):
         #Place 19 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(19))
 
     #OPCODE     GAS
     #73         3   
-    def PUSH20() -> int:
+    def PUSH20(self):
         #Place 20 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(20))
 
     #OPCODE     GAS
     #74         3   
-    def PUSH21() -> int:
+    def PUSH21(self):
         #Place 21 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(21))
 
     #OPCODE     GAS
     #75         3   
-    def PUSH22() -> int:
+    def PUSH22(self):
         #Place 22 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(22))
 
     #OPCODE     GAS
     #76         3   
-    def PUSH23() -> int:
+    def PUSH23(self):
         #Place 23 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(23))
 
     #OPCODE     GAS
     #77         3   
-    def PUSH24() -> int:
+    def PUSH24(self):
         #Place 24 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(24))
 
     #OPCODE     GAS
     #78         3   
-    def PUSH25() -> int:
+    def PUSH25(self):
         #Place 25 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(25))
 
     #OPCODE     GAS
     #79         3   
-    def PUSH26() -> int:
+    def PUSH26(self):
         #Place 26 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(26))
 
     #OPCODE     GAS
     #7A         3   
-    def PUSH27() -> int:
+    def PUSH27(self):
         #Place 27 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(27))
 
     #OPCODE     GAS
     #7B         3   
-    def PUSH28() -> int:
+    def PUSH28(self):
         #Place 28 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(28))
 
     #OPCODE     GAS
     #7C         3   
-    def PUSH29() -> int:
+    def PUSH29(self):
         #Place 29 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(29))
 
     #OPCODE     GAS
     #7D         3   
-    def PUSH30() -> int:
+    def PUSH30(self):
         #Place 30 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(30))
 
     #OPCODE     GAS
     #7E         3   
-    def PUSH31() -> int:
+    def PUSH31(self):
         #Place 31 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(31))
 
     #OPCODE     GAS
     #7F         3   
-    def PUSH32() -> int:
+    def PUSH32(self):
         #Place 32 bytes item on stack
-        return None
+        return self.stack.push(self.executor.processBytecode(32))
 
 
 
@@ -864,99 +864,99 @@ class Instructions:
 
     #OPCODE     GAS
     #80         3   
-    def DUP1(value:bytes) -> bytes:
+    def DUP1(self):
         #Duplicate 1st stack item
-        return None
+        return self.stack.duplicate(1)
 
     #OPCODE     GAS
     #81         3   
-    def DUP2(value:bytes) -> bytes:
+    def DUP2(self):
         #Duplicate 2nd stack item
-        return None
+        return self.stack.duplicate(2)
 
     #OPCODE     GAS
     #82         3   
-    def DUP3(value:bytes) -> bytes:
+    def DUP3(self):
         #Duplicate 3rd stack item
-        return None
+        return self.stack.duplicate(3)
 
     #OPCODE     GAS
     #83         3   
-    def DUP4(value:bytes) -> bytes:
+    def DUP4(self):
         #Duplicate 4th stack item
-        return None
+        return self.stack.duplicate(4)
 
     #OPCODE     GAS
     #84         3   
-    def DUP5(value:bytes) -> bytes:
+    def DUP5(self):
         #Duplicate 5th stack item
-        return None
+        return self.stack.duplicate(5)
 
     #OPCODE     GAS
     #85         3   
-    def DUP6(value:bytes) -> bytes:
+    def DUP6(self):
         #Duplicate 6th stack item
-        return None
+        return self.stack.duplicate(6)
 
     #OPCODE     GAS
     #86         3   
-    def DUP7(value:bytes) -> bytes:
+    def DUP7(self):
         #Duplicate 7th stack item
-        return None
+        return self.stack.duplicate(7)
 
     #OPCODE     GAS
     #87         3   
-    def DUP8(value:bytes) -> bytes:
+    def DUP8(self):
         #Duplicate 8th stack item
-        return None
+        return self.stack.duplicate(8)
 
     #OPCODE     GAS
     #88         3   
-    def DUP9(value:bytes) -> bytes:
+    def DUP9(self):
         #Duplicate 9th stack item
-        return None
+        return self.stack.duplicate(9)
 
     #OPCODE     GAS
     #89         3   
-    def DUP10(value:bytes) -> bytes:
+    def DUP10(self):
         #Duplicate 10th stack item
-        return None
+        return self.stack.duplicate(10)
 
     #OPCODE     GAS
     #8A         3   
-    def DUP11(value:bytes) -> bytes:
+    def DUP11(self):
         #Duplicate 11th stack item
-        return None
+        return self.stack.duplicate(11)
 
     #OPCODE     GAS
     #8B         3   
-    def DUP12(value:bytes) -> bytes:
+    def DUP12(self):
         #Duplicate 12th stack item
-        return None
+        return self.stack.duplicate(12)
 
     #OPCODE     GAS
     #8C         3   
-    def DUP13(value:bytes) -> bytes:
+    def DUP13(self):
         #Duplicate 13th stack item
-        return None
+        return self.stack.duplicate(13)
 
     #OPCODE     GAS
     #8D         3   
-    def DUP14(value:bytes) -> bytes:
+    def DUP14(self):
         #Duplicate 14th stack item
-        return None
+        return self.stack.duplicate(14)
 
     #OPCODE     GAS
     #8E         3   
-    def DUP15(value:bytes) -> bytes:
+    def DUP15(self):
         #Duplicate 15th stack item
-        return None
+        return self.stack.duplicate(15)
 
     #OPCODE     GAS
     #8F         3   
-    def DUP16(value:bytes) -> bytes:
+    def DUP16(self):
         #Duplicate 16th stack item
-        return None
+        return self.stack.duplicate(16)
 
 
 
@@ -971,99 +971,99 @@ class Instructions:
 
     #OPCODE     GAS
     #90         3   
-    def SWAP1(a:bytes,b:bytes) -> bytes:
+    def SWAP1(self):
         #Exchange 1st and 2nd stack items
-        return None
+        return self.stack.swap(1)
 
     #OPCODE     GAS
     #91         3   
-    def SWAP2(a:bytes,ignored:bytes,b:bytes) -> bytes:# ignored return types in the middle DO LATER
+    def SWAP2(self):# ignored return types in the middle DO LATER
         #Exchange 1st and 3rd stack items 
-        return None
+        return self.stack.swap(2)
 
     #OPCODE     GAS
     #92         3   
-    def SWAP3(a:bytes,ignored:bytes,b:bytes) -> bytes:# ignored return types in the middle DO LATER
+    def SWAP3(self):# ignored return types in the middle DO LATER
         #Exchange 1st and 4th stack items
-        return None
+        return self.stack.swap(3)
 
     #OPCODE     GAS
     #93         3   
-    def SWAP4(a:bytes,ignored:bytes,b:bytes) -> bytes:# ignored return types in the middle DO LATER
+    def SWAP4(self):# ignored return types in the middle DO LATER
         #Exchange 1st and 5th stack items
-        return None
+        return self.stack.swap(4)
 
     #OPCODE     GAS
     #94         3   
-    def SWAP5(a:bytes,ignored:bytes,b:bytes) -> bytes:# ignored return types in the middle DO LATER
+    def SWAP5(self):# ignored return types in the middle DO LATER
         #Exchange 1st and 6th stack items
-        return None
+        return self.stack.swap(5)
 
     #OPCODE     GAS
     #95         3   
-    def SWAP6(a:bytes,ignored:bytes,b:bytes) -> bytes:# ignored return types in the middle DO LATER
+    def SWAP6(self):# ignored return types in the middle DO LATER
         #Exchange 1st and 7th stack items
-        return None
+        return self.stack.swap(6)
 
     #OPCODE     GAS
     #96         3   
-    def SWAP7(a:bytes,ignored:bytes,b:bytes) -> bytes:# ignored return types in the middle DO LATER
+    def SWAP7(self):# ignored return types in the middle DO LATER
         #Exchange 1st and 8th stack items
-        return None
+        return self.stack.swap(7)
 
     #OPCODE     GAS
     #97         3   
-    def SWAP8(a:bytes,ignored:bytes,b:bytes) -> bytes:# ignored return types in the middle DO LATER
+    def SWAP8(self):# ignored return types in the middle DO LATER
         #Exchange 1st and 9th stack items
-        return None
+        return self.stack.swap(8)
 
     #OPCODE     GAS
     #98         3   
-    def SWAP9(a:bytes,ignored:bytes,b:bytes) -> bytes:# ignored return types in the middle DO LATER
+    def SWAP9(self):# ignored return types in the middle DO LATER
         #Exchange 1st and 10th stack items
-        return None
+        return self.stack.swap(9)
 
     #OPCODE     GAS
     #99         3   
-    def SWAP10(a:bytes,ignored:bytes,b:bytes) -> bytes:# ignored return types in the middle DO LATER
+    def SWAP10(self):# ignored return types in the middle DO LATER
         #Exchange 1st and 11th stack items
-        return None
+        return self.stack.swap(10)
 
     #OPCODE     GAS
     #9A         3   
-    def SWAP11(a:bytes,ignored:bytes,b:bytes) -> bytes:# ignored return types in the middle DO LATER
+    def SWAP11(self):# ignored return types in the middle DO LATER
         #Exchange 1st and 12th stack items
-        return None
+        return self.stack.swap(11)
 
     #OPCODE     GAS
     #9B         3   
-    def SWAP12(a:bytes,ignored:bytes,b:bytes) -> bytes:# ignored return types in the middle DO LATER
+    def SWAP12(self):# ignored return types in the middle DO LATER
         #Exchange 1st and 13th stack items
-        return None
+        return self.stack.swap(12)
 
     #OPCODE     GAS
     #9C         3   
-    def SWAP13(a:bytes,ignored:bytes,b:bytes) -> bytes:# ignored return types in the middle DO LATER
+    def SWAP13(self):# ignored return types in the middle DO LATER
         #Exchange 1st and 14th stack items
-        return None
+        return self.stack.swap(13)
 
     #OPCODE     GAS
     #9D         3   
-    def SWAP14(a:bytes,ignored:bytes,b:bytes) -> bytes:# ignored return types in the middle DO LATER
+    def SWAP14(self):# ignored return types in the middle DO LATER
         #Exchange 1st and 15th stack items
-        return None
+        return self.stack.swap(14)
 
     #OPCODE     GAS
     #9E         3   
-    def SWAP15(a:bytes,ignored:bytes,b:bytes) -> bytes:# ignored return types in the middle DO LATER
+    def SWAP15(self):# ignored return types in the middle DO LATER
         #Exchange 1st and 16th stack items
-        return None
+        return self.stack.swap(15)
 
     #OPCODE     GAS
     #9F         3   
-    def SWAP16(a:bytes,ignored:bytes,b:bytes) -> bytes:# ignored return types in the middle DO LATER
+    def SWAP16(self):# ignored return types in the middle DO LATER
         #Exchange 1st and 17th stack items
-        return None
+        return self.stack.swap(16)
 
 
 

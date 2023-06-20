@@ -32,9 +32,11 @@ class Executor:
             print("--")   
 
 
-    def processBytecode(self, next_word) -> int:
-        item = int.from_bytes(self.bytecode[self.pc : self.pc + next_word], byteorder="big")
-        
+    def processBytecode(self, next_word) -> bytes:
+        # item = int.from_bytes(self.bytecode[self.pc : self.pc + next_word], byteorder="big")
+        item = self.bytecode[self.pc : self.pc + next_word]
+        print(item)
+        # print(int(item))
         # print(".")
         # print(len(self.bytecode))
         # print(str(item))
@@ -45,7 +47,7 @@ class Executor:
     
     def getNextOpcode(self):
         mnemonic = self.processBytecode(1)
-        opcode = [x for x in self.opcodes_list if x['mnemonic'] == mnemonic]
+        opcode = [x for x in self.opcodes_list if x['mnemonic'] == int.from_bytes(mnemonic, byteorder="big")]
         return opcode
     
 
