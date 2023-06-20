@@ -1,5 +1,6 @@
 from stack import Stack
 from memory import Memory
+from storage import Storage
 from utils import signed_to_unsigned,unsigned_to_signed
 from eth_hash.auto import keccak
 
@@ -11,6 +12,7 @@ class Instructions:
     def __init__(self,executor:object) -> None:
         self.stack = Stack()
         self.memory = Memory()
+        self.storage = Storage()
         self.executor = executor
 
     def getInstructionFunction(self,opcode_name:str):
@@ -584,15 +586,26 @@ class Instructions:
 
     #OPCODE     GAS
     #54         100 dynamic    
-    def SLOAD(key:bytes) -> int:
+    def SLOAD(self) -> int:
         #Load word from storage
-        return None
+        key = self.stack.pop()
+
+        processed_key = key.to_bytes(32, 'big')
+
+        return self.storage.load(processed_key)
 
     #OPCODE     GAS
     #55         100 dynamic  
-    def SSTORE(key:bytes,value:bytes):
+    def SSTORE(self):
         #Save word to storage
-        return None
+        key = self.stack.pop()
+        value = self.stack.pop()
+
+        processed_key = key.to_bytes(32, 'big')
+        processed_value = value.to_bytes(32, 'big')
+
+        self.storage.store(processed_key,processed_value)
+
 
     #OPCODE     GAS
     #56         8  
