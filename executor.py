@@ -7,10 +7,12 @@ from instructions import Instructions
 
 class Executor:
 
-    def __init__(self, bytecode:bytearray,opcodes_list:list) -> None:
+    def __init__(self, bytecode:bytearray,opcodes_list:list,starting_gas:int) -> None:
         self.instructions = Instructions(self)
         self.bytecode = bytecode
         self.opcodes_list = opcodes_list
+        self.gas_remaining = starting_gas
+        self.gas_starting = starting_gas
         self.pc = 0
         self.stopped = False
 
@@ -19,12 +21,17 @@ class Executor:
         while not self.stopped:
             print("") 
             instruction = self.get_next_opcode()
+            self.gas_remaining = self.gas_remaining - instruction["gas"]
             if (self.pc > len(self.bytecode)):
                 print("STOPPING RUNTIME - CODE FINISHED")
                 print()
                 return "Stopped"
             elif (instruction["name"]== "STOP"):
                 print("STOPPING RUNTIME - STOP COMMAND")
+                print()
+                return "Stopped"
+            elif (self.gas_remaining < 0):
+                print("STOPPING RUNTIME - OUT OF GAS")
                 print()
                 return "Stopped"
             print(f"Opcode Instruction  is : {instruction}")
@@ -38,6 +45,7 @@ class Executor:
                     print(f"Processing result is : int {result}")
                 else:
                     print(f"Processing result is : bytes {result.hex()}")
+            print(f"Gas remaining: {self.gas_remaining} / {self.gas_starting}")
             print("--")   
 
 

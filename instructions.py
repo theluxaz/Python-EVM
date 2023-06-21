@@ -656,9 +656,9 @@ class Instructions:
 
     #OPCODE     GAS
     #5A         2  
-    def GAS() -> int:
+    def GAS(self) -> int:
         #Get the amount of available gas, including the corresponding reduction for the cost of this instruction
-        return None
+        return self.stack.push_int(self.executor.gas_remaining) 
 
     #OPCODE     GAS
     #5B         1 
@@ -1177,15 +1177,15 @@ class Instructions:
 
     #OPCODE     GAS
     #FD         0 dynamic   
-    def REVERT(dest_offset:int, offset:int,size:int):
+    def REVERT(self):
         #Halt execution reverting state changes but returning data and remaining gas
-        return None
+        return "Stopped"
 
     #OPCODE     GAS
     #FE         NaN dynamic  
-    def INVALID() -> int:
+    def INVALID(self) -> int:
         #Designated invalid instruction
-        return None
+        return "Stopped"
 
     #OPCODE     GAS
     #FF         5000 dynamic   
