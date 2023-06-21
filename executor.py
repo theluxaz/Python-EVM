@@ -17,37 +17,38 @@ class Executor:
     #main processing loop
     def run(self):
         while not self.stopped:
-            instruction = self.getNextOpcode()
-            if self.pc > len(self.bytecode):
-                break
+            print("") 
+            instruction = self.get_next_opcode()
+            if (self.pc > len(self.bytecode)):
+                print("STOPPING RUNTIME - CODE FINISHED")
+                print()
+                return "Stopped"
+            elif (instruction["name"]== "STOP"):
+                print("STOPPING RUNTIME - STOP COMMAND")
+                print()
+                return "Stopped"
             print(f"Opcode Instruction  is : {instruction}")
 
-            processing_function = self.instructions.getInstructionFunction(instruction[0]["name"])
+            processing_function = self.instructions.get_instruction_function(instruction["name"])
             result = processing_function()
-            print(f"Processing result is : {result}")
-            
-            # print(f"{instruction} @ pc={executor.pc}")
-            # print(context)
 
+            self.instructions.stack.print()
+            
+            if(type(result) == int):
+                print(f"Processing result is : int {result}")
+            else:
+                print(f"Processing result is : bytes {result.hex()}")
             print("--")   
 
 
-    def processBytecode(self, next_word) -> bytes:
-        # item = int.from_bytes(self.bytecode[self.pc : self.pc + next_word], byteorder="big")
+    def process_bytecode(self, next_word) -> bytes:
         item = self.bytecode[self.pc : self.pc + next_word]
-        print(item)
-        # print(int(item))
-        # print(".")
-        # print(len(self.bytecode))
-        # print(str(item))
-
         self.pc += next_word
-        print("PC is "+str(self.pc))
         return item
     
-    def getNextOpcode(self):
-        mnemonic = self.processBytecode(1)
-        opcode = [x for x in self.opcodes_list if x['mnemonic'] == int.from_bytes(mnemonic, byteorder="big")]
+    def get_next_opcode(self):
+        mnemonic = self.process_bytecode(1)
+        opcode = [x for x in self.opcodes_list if x['mnemonic'] == int.from_bytes(mnemonic, byteorder="big")][0]
         return opcode
     
 

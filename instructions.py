@@ -15,7 +15,7 @@ class Instructions:
         self.storage = Storage()
         self.executor = executor
 
-    def getInstructionFunction(self,opcode_name:str):
+    def get_instruction_function(self,opcode_name:str):
         method = None
         try:
             method = getattr(self, opcode_name)
@@ -41,45 +41,45 @@ class Instructions:
     #01         3  
     def ADD(self) -> int:
         #(a:int, b:int)
-        a = self.stack.pop()
-        b = self.stack.pop()
-        return self.stack.push(a+b) #possibly add this on this line  & max_value
+        a = self.stack.pop_int()
+        b = self.stack.pop_int()
+        return self.stack.push_int(a+b) #possibly add this on this line  & max_value
 
     #OPCODE     GAS
     #02         5  
     def MUL(self) -> int:
         #(a:int, b:int)
-        a = self.stack.pop()
-        b = self.stack.pop()
-        return self.stack.push(a*b) #possibly add this on this line  & max_value
+        a = self.stack.pop_int()
+        b = self.stack.pop_int()
+        return self.stack.push_int(a*b) #possibly add this on this line  & max_value
 
     #OPCODE     GAS
     #03         3  
     def SUB(self) -> int:
         #(a:int, b:int)
-        a = self.stack.pop()
-        b = self.stack.pop()
-        return self.stack.push(a-b) #possibly add this on this line  & max_value
+        a = self.stack.pop_int()
+        b = self.stack.pop_int()
+        return self.stack.push_int(a-b) #possibly add this on this line  & max_value
 
     #OPCODE     GAS
     #04         2  
     def DIV(self) -> int:
         #(a:int, b:int)
-        num = self.stack.pop()
-        den = self.stack.pop()
+        num = self.stack.pop_int()
+        den = self.stack.pop_int()
 
         if den == 0:
-            return self.stack.push(0)
+            return self.stack.push_int(0)
         else:
-            return self.stack.push(num//den) #possibly add this on this line  & max_value
+            return self.stack.push_int(num//den) #possibly add this on this line  & max_value
 
     #OPCODE     GAS
     #05         5  
     def SDIV(self) -> int:
         #(a:int, b:int)
         #SIGNED INTEGER DIVISION
-        a = self.stack.pop()
-        b = self.stack.pop()
+        a = self.stack.pop_int()
+        b = self.stack.pop_int()
 
         num = unsigned_to_signed(a)
         den = unsigned_to_signed(b)
@@ -92,27 +92,27 @@ class Instructions:
         else:
             result = pos_or_neg * (abs(num) // abs(den))
 
-        return self.stack.push(signed_to_unsigned(result)) #possibly add this on this line  & max_value
+        return self.stack.push_int(signed_to_unsigned(result)) #possibly add this on this line  & max_value
 
     #OPCODE     GAS
     #06         5  
     def MOD(self) -> int:
         #(a:int, b:int)
-        a = self.stack.pop()
-        b = self.stack.pop()
+        a = self.stack.pop_int()
+        b = self.stack.pop_int()
 
         if(b==0):
-            return self.stack.push(0)
+            return self.stack.push_int(0)
         else:
-            return self.stack.push(a%b)
+            return self.stack.push_int(a%b)
 
     #OPCODE     GAS
     #07         5  
     def SMOD(self) -> int:
         #(a:int, b:int)
         #SIGNED MODULUS
-        a = self.stack.pop()
-        b = self.stack.pop()
+        a = self.stack.pop_int()
+        b = self.stack.pop_int()
 
         val = unsigned_to_signed(a)
         mod = unsigned_to_signed(b)
@@ -124,7 +124,7 @@ class Instructions:
         else:
             result = (abs(val) % abs(mod) * pos_or_neg) #possibly add this on this line  & max_value
 
-        return self.stack.push(signed_to_unsigned(result))
+        return self.stack.push_int(signed_to_unsigned(result))
 
 
     #OPCODE     GAS
@@ -132,44 +132,44 @@ class Instructions:
     def ADDMOD(self) -> int:
         #(a:int, b:int, n:int
         #ADD TWO VALUES, THEN MODULUS
-        a = self.stack.pop()
-        b = self.stack.pop()
-        n = self.stack.pop()
+        a = self.stack.pop_int()
+        b = self.stack.pop_int()
+        n = self.stack.pop_int()
 
         if(n==0):
-            return self.stack.push(0)
+            return self.stack.push_int(0)
         else:
-            return self.stack.push((a+b)%n)
+            return self.stack.push_int((a+b)%n)
 
     #OPCODE     GAS
     #09         8  
     def MULMOD(self) -> int:
         #(a:int, b:int, n:int
         #MULTIPLY TWO VALUES, THEN MODULUS
-        a = self.stack.pop()
-        b = self.stack.pop()
-        n = self.stack.pop()
+        a = self.stack.pop_int()
+        b = self.stack.pop_int()
+        n = self.stack.pop_int()
 
         if(n==0):
-            return self.stack.push(0)
+            return self.stack.push_int(0)
         else:
-            return self.stack.push((a*b)%n)
+            return self.stack.push_int((a*b)%n)
 
     #OPCODE     GAS
     #0A         10   dynamic  
     def EXP(self) -> int:
         #(a:int (base), exponent:int
         #EXPONENT
-        a = self.stack.pop()
-        exponent = self.stack.pop()
+        a = self.stack.pop_int()
+        exponent = self.stack.pop_int()
 
         if(exponent ==0):
-            return self.stack.push(1)
+            return self.stack.push_int(1)
         elif(a==1):
-            return self.stack.push(0)
+            return self.stack.push_int(0)
         else:
             #TODO  ADD MODULUS? (3rd parameter in .pow) -> max_ceiling
-            return self.stack.push(pow(a**exponent)) 
+            return self.stack.push_int(pow(a,exponent)) 
 
 
 
@@ -181,8 +181,8 @@ class Instructions:
 
         #official implementation
 
-        b = self.stack.pop()
-        x = self.stack.pop()
+        b = self.stack.pop_int()
+        x = self.stack.pop_int()
 
         if b < 32:
             testbit = b * 8 + 7
@@ -193,7 +193,7 @@ class Instructions:
                 result = x & (sign_bit - 1)
         else:
             result = x
-        return self.stack.push(result)
+        return self.stack.push_int(result)
 
 
 
@@ -208,81 +208,81 @@ class Instructions:
     #10         3  
     def LT(self) -> int:
         #LESS THAN
-        a = self.stack.pop()
-        b = self.stack.pop()
-        return self.stack.push(int(a<b))
+        a = self.stack.pop_int()
+        b = self.stack.pop_int()
+        return self.stack.push_int(int(a<b))
 
     #OPCODE     GAS
     #11         3  
     def GT(self) -> int:
         #GREATER THAN
-        a = self.stack.pop()
-        b = self.stack.pop()
-        return self.stack.push(int(a>b))
+        a = self.stack.pop_int()
+        b = self.stack.pop_int()
+        return self.stack.push_int(int(a>b))
 
     #OPCODE     GAS
     #12         3  
     def SLT(self) -> int:
         #SIGNED LESS THAN
-        a = unsigned_to_signed(self.stack.pop())
-        b = unsigned_to_signed(self.stack.pop())
-        return self.stack.push(signed_to_unsigned(int(a<b)))
+        a = unsigned_to_signed(self.stack.pop_int())
+        b = unsigned_to_signed(self.stack.pop_int())
+        return self.stack.push_int(signed_to_unsigned(int(a<b)))
 
     #OPCODE     GAS
     #13         3  
     def SGT(self) -> int:
         #SIGNED GREATER THAN
-        a = unsigned_to_signed(self.stack.pop())
-        b = unsigned_to_signed(self.stack.pop())
-        return self.stack.push(signed_to_unsigned(int(a>b)))
+        a = unsigned_to_signed(self.stack.pop_int())
+        b = unsigned_to_signed(self.stack.pop_int())
+        return self.stack.push_int(signed_to_unsigned(int(a>b)))
 
     #OPCODE     GAS
     #14         3  
     def EQ(self) -> int:
         #EQUAL
-        a = self.stack.pop()
-        b = self.stack.pop()
-        return self.stack.push(int(a==b))
+        a = self.stack.pop_bytes()
+        b = self.stack.pop_bytes()
+        return self.stack.push_int(int(a==b))
 
     #OPCODE     GAS
     #15         3  
     def ISZERO(self) -> int:
-        a = self.stack.pop()
-        return self.stack.push(int(a==0))
+        a = self.stack.pop_int()
+        return self.stack.push_int(int(a==0))
 
     #OPCODE     GAS
     #16         3  
     def AND(self) -> bytearray: #TODO figure out return type
         #BITWISE AND
-        a = self.stack.pop()
-        b = self.stack.pop()
-        return self.stack.push(a&b)
+        a = self.stack.pop_bytes()
+        b = self.stack.pop_bytes()
+        return self.stack.push_bytes(a&b)
 
 
     #OPCODE     GAS
     #17         3  
     def OR(self) -> bytearray: #TODO figure out return type
         #BITWISE OR
-        a = self.stack.pop()
-        b = self.stack.pop()
-        return self.stack.push(a|b)
+        a = self.stack.pop_bytes()
+        b = self.stack.pop_bytes()
+        return self.stack.push_bytes(a|b)
 
     #OPCODE     GAS
     #18         3  
     def XOR(self) -> bytearray: #TODO figure out return type
         #BITWISE XOR
-        a = self.stack.pop()
-        b = self.stack.pop()
-        return self.stack.push(a^b)
+        a = self.stack.pop_bytes()
+        b = self.stack.pop_bytes()
+        return self.stack.push_bytes(a^b)
 
     #OPCODE     GAS
     #19         3  
     def NOT(self) -> bytearray: #TODO figure out return type
         #BITWISE NOT
-        a = self.stack.pop()
+        a = self.stack.pop_bytes()
         #OR TRY
-        #return self.stack.push(max_value - value)
-        return self.stack.push(~a)
+        #return self.stack.push_bytes(max_value - value)
+        return self.stack.push_bytes(~a)
         
 
     #OPCODE     GAS
@@ -291,39 +291,39 @@ class Instructions:
         #offset and byte value
         #(i:int (position),x:bytes (value))
         #RETRIEVE SINGLE BYTE FROM WORD
-        pos = self.stack.pop()
-        val = self.stack.pop()
+        pos = self.stack.pop_bytes()
+        val = self.stack.pop_bytes()
 
         if pos >= 32:
             result = 0
         else:
             result = (val // pow(256, 31 - pos)) % 256
 
-        return self.stack.push(result)
+        return self.stack.push_bytes(result)
 
     #OPCODE     GAS
     #1B         3  
     def SHL(self)  -> bytes:
         #(shift:int (bits),value:bytes(value))
         #SHIFT shift VALUE value to the LEFT
-        shift = self.stack.pop()
-        val = self.stack.pop()
+        shift = self.stack.pop_bytes()
+        val = self.stack.pop_bytes()
         if(shift> 255):
-            return self.stack.push(0)
+            return self.stack.push_bytes(0)
 
-        return self.stack.push(val << shift)
+        return self.stack.push_bytes(val << shift)
 
     #OPCODE     GAS
     #1C         3  
     def SHR(self) -> bytes:
         #(shift:int (bits),value:bytes(value))
         #SHIFT shift VALUE value to the RIGHT
-        shift = self.stack.pop()
-        val = self.stack.pop()
+        shift = self.stack.pop_bytes()
+        val = self.stack.pop_bytes()
         if(shift> 255):
-            return self.stack.push(0)
+            return self.stack.push_bytes(0)
 
-        return self.stack.push(val >> shift)
+        return self.stack.push_bytes(val >> shift)
 
     #UNFINISHED  - More info: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-145.md
     # Implementation here from EIP https://github.com/ethereum/aleth/pull/4054/files
@@ -334,12 +334,12 @@ class Instructions:
         #(shift:int,value:bytes) --- IS SIGNED, similar to previous
         #Shift the bits towards the least significant one. The bits moved before the first one are discarded, 
         #the new bits are set to 0 if the previous most significant bit was 0, otherwise the new bits are set to 1.
-        shift = self.stack.pop()
-        val = self.stack.pop()
+        shift = self.stack.pop_bytes()
+        val = self.stack.pop_bytes()
         if(shift> 255):
-            return self.stack.push(0)
+            return self.stack.push_bytes(0)
         
-        return self.stack.push(val >> shift)
+        return self.stack.push_bytes(val >> shift)
 
 
 
@@ -354,12 +354,12 @@ class Instructions:
     def SHA3(self) -> bytes:
         #(offset:int,size:int)
         #Compute Keccak-256 hash
-        offset = self.stack.pop()
-        size = self.stack.pop()
+        offset = self.stack.pop_bytes()
+        size = self.stack.pop_bytes()
 
         loaded_value = self.memory.load(offset, size)
 
-        return self.stack.push(keccak(loaded_value))
+        return self.stack.push_bytes(keccak(loaded_value))
 
 
 
@@ -542,14 +542,14 @@ class Instructions:
     #50         2 
     def POP(self):
         #Remove item from stack
-        item = self.stack.pop()
+        item = self.stack.pop_bytes()
         return item
 
     #OPCODE     GAS
     #51         3 dynamic  
     def MLOAD(self) -> bytes:
         #Load word from memory
-        offset = self.stack.pop()
+        offset = self.stack.pop_bytes()
         size=32
         return self.memory.load(offset,size)
 
@@ -558,8 +558,8 @@ class Instructions:
     #52         3 dynamic    
     def MSTORE(self):
         #Save word to memory
-        offset = self.stack.pop()
-        value = self.stack.pop()
+        offset = self.stack.pop_bytes()
+        value = self.stack.pop_int()
 
         processed_value = value.to_bytes(32, 'big')
         
@@ -578,8 +578,8 @@ class Instructions:
     #53         3 dynamic    
     def MSTORE8(self):
         #Save word to memory
-        offset = self.stack.pop()
-        value = self.stack.pop()
+        offset = self.stack.pop_bytes()
+        value = self.stack.pop_bytes()
 
         self.memory.store8(offset,value)
         return None
@@ -588,7 +588,7 @@ class Instructions:
     #54         100 dynamic    
     def SLOAD(self) -> int:
         #Load word from storage
-        key = self.stack.pop()
+        key = self.stack.pop_bytes()
 
         processed_key = key.to_bytes(32, 'big')
 
@@ -598,8 +598,8 @@ class Instructions:
     #55         100 dynamic  
     def SSTORE(self):
         #Save word to storage
-        key = self.stack.pop()
-        value = self.stack.pop()
+        key = self.stack.pop_bytes()
+        value = self.stack.pop_bytes()
 
         processed_key = key.to_bytes(32, 'big')
         processed_value = value.to_bytes(32, 'big')
@@ -663,97 +663,97 @@ class Instructions:
     #60         3   
     def PUSH1(self):
         #Place 1 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(1))
+        return self.stack.push_bytes(self.executor.process_bytecode(1))
 
     #OPCODE     GAS
     #61         3   
     def PUSH2(self):
         #Place 2 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(2))
+        return self.stack.push_bytes(self.executor.process_bytecode(2))
 
     #OPCODE     GAS
     #62         3   
     def PUSH3(self):
         #Place 3 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(3))
+        return self.stack.push_bytes(self.executor.process_bytecode(3))
 
     #OPCODE     GAS
     #63         3   
     def PUSH4(self):
         #Place 4 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(4))
+        return self.stack.push_bytes(self.executor.process_bytecode(4))
 
     #OPCODE     GAS
     #64         3   
     def PUSH5(self):
         #Place 5 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(5))
+        return self.stack.push_bytes(self.executor.process_bytecode(5))
 
     #OPCODE     GAS
     #65         3   
     def PUSH6(self):
         #Place 6 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(6))
+        return self.stack.push_bytes(self.executor.process_bytecode(6))
 
     #OPCODE     GAS
     #66         3   
     def PUSH7(self):
         #Place 7 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(7))
+        return self.stack.push_bytes(self.executor.process_bytecode(7))
 
     #OPCODE     GAS
     #67         3   
     def PUSH8(self):
         #Place 8 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(8))
+        return self.stack.push_bytes(self.executor.process_bytecode(8))
 
     #OPCODE     GAS
     #68         3   
     def PUSH9(self):
         #Place 9 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(9))
+        return self.stack.push_bytes(self.executor.process_bytecode(9))
 
     #OPCODE     GAS
     #69         3   
     def PUSH10(self):
         #Place 10 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(10))
+        return self.stack.push_bytes(self.executor.process_bytecode(10))
 
     #OPCODE     GAS
     #6A         3   
     def PUSH11(self):
         #Place 11 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(11))
+        return self.stack.push_bytes(self.executor.process_bytecode(11))
 
     #OPCODE     GAS
     #6B         3   
     def PUSH12(self):
         #Place 12 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(12))
+        return self.stack.push_bytes(self.executor.process_bytecode(12))
 
     #OPCODE     GAS
     #6C         3   
     def PUSH13(self):
         #Place 13 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(13))
+        return self.stack.push_bytes(self.executor.process_bytecode(13))
 
     #OPCODE     GAS
     #6D         3   
     def PUSH14(self):
         #Place 14 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(14))
+        return self.stack.push_bytes(self.executor.process_bytecode(14))
 
     #OPCODE     GAS
     #6E         3   
     def PUSH15(self):
         #Place 15 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(15))
+        return self.stack.push_bytes(self.executor.process_bytecode(15))
 
     #OPCODE     GAS
     #6F         3   
     def PUSH16(self):
         #Place 16 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(16))
+        return self.stack.push_bytes(self.executor.process_bytecode(16))
 
 
     #70s
@@ -762,97 +762,97 @@ class Instructions:
     #70         3   
     def PUSH17(self):
         #Place 17 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(17))
+        return self.stack.push_bytes(self.executor.process_bytecode(17))
 
     #OPCODE     GAS
     #71         3   
     def PUSH18(self):
         #Place 18 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(18))
+        return self.stack.push_bytes(self.executor.process_bytecode(18))
 
     #OPCODE     GAS
     #72         3   
     def PUSH19(self):
         #Place 19 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(19))
+        return self.stack.push_bytes(self.executor.process_bytecode(19))
 
     #OPCODE     GAS
     #73         3   
     def PUSH20(self):
         #Place 20 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(20))
+        return self.stack.push_bytes(self.executor.process_bytecode(20))
 
     #OPCODE     GAS
     #74         3   
     def PUSH21(self):
         #Place 21 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(21))
+        return self.stack.push_bytes(self.executor.process_bytecode(21))
 
     #OPCODE     GAS
     #75         3   
     def PUSH22(self):
         #Place 22 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(22))
+        return self.stack.push_bytes(self.executor.process_bytecode(22))
 
     #OPCODE     GAS
     #76         3   
     def PUSH23(self):
         #Place 23 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(23))
+        return self.stack.push_bytes(self.executor.process_bytecode(23))
 
     #OPCODE     GAS
     #77         3   
     def PUSH24(self):
         #Place 24 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(24))
+        return self.stack.push_bytes(self.executor.process_bytecode(24))
 
     #OPCODE     GAS
     #78         3   
     def PUSH25(self):
         #Place 25 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(25))
+        return self.stack.push_bytes(self.executor.process_bytecode(25))
 
     #OPCODE     GAS
     #79         3   
     def PUSH26(self):
         #Place 26 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(26))
+        return self.stack.push_bytes(self.executor.process_bytecode(26))
 
     #OPCODE     GAS
     #7A         3   
     def PUSH27(self):
         #Place 27 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(27))
+        return self.stack.push_bytes(self.executor.process_bytecode(27))
 
     #OPCODE     GAS
     #7B         3   
     def PUSH28(self):
         #Place 28 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(28))
+        return self.stack.push_bytes(self.executor.process_bytecode(28))
 
     #OPCODE     GAS
     #7C         3   
     def PUSH29(self):
         #Place 29 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(29))
+        return self.stack.push_bytes(self.executor.process_bytecode(29))
 
     #OPCODE     GAS
     #7D         3   
     def PUSH30(self):
         #Place 30 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(30))
+        return self.stack.push_bytes(self.executor.process_bytecode(30))
 
     #OPCODE     GAS
     #7E         3   
     def PUSH31(self):
         #Place 31 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(31))
+        return self.stack.push_bytes(self.executor.process_bytecode(31))
 
     #OPCODE     GAS
     #7F         3   
     def PUSH32(self):
         #Place 32 bytes item on stack
-        return self.stack.push(self.executor.processBytecode(32))
+        return self.stack.push_bytes(self.executor.process_bytecode(32))
 
 
 
