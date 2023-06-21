@@ -33,11 +33,11 @@ class Executor:
             result = processing_function()
 
             self.instructions.stack.print()
-            
-            if(type(result) == int):
-                print(f"Processing result is : int {result}")
-            else:
-                print(f"Processing result is : bytes {result.hex()}")
+            if(result):
+                if(type(result) == int):
+                    print(f"Processing result is : int {result}")
+                else:
+                    print(f"Processing result is : bytes {result.hex()}")
             print("--")   
 
 
@@ -50,6 +50,15 @@ class Executor:
         mnemonic = self.process_bytecode(1)
         opcode = [x for x in self.opcodes_list if x['mnemonic'] == int.from_bytes(mnemonic, byteorder="big")][0]
         return opcode
+    
+    def check_opcode_at_pc(self,offset):
+        mnemonic = self.bytecode[offset : offset+1]
+        opcode = [x for x in self.opcodes_list if x['mnemonic'] == int.from_bytes(mnemonic, byteorder="big")][0]
+        return opcode
+    
+    def set_pc(self,pc):
+        self.pc = pc
+        return pc
     
 
 

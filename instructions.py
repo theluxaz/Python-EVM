@@ -254,35 +254,34 @@ class Instructions:
     #16         3  
     def AND(self) -> bytearray: #TODO figure out return type
         #BITWISE AND
-        a = self.stack.pop_bytes()
-        b = self.stack.pop_bytes()
-        return self.stack.push_bytes(a&b)
+        item1 = self.stack.pop_int()
+        item2 = self.stack.pop_int()
+        return self.stack.push_int(item1 & item2)
 
 
     #OPCODE     GAS
     #17         3  
     def OR(self) -> bytearray: #TODO figure out return type
         #BITWISE OR
-        a = self.stack.pop_bytes()
-        b = self.stack.pop_bytes()
-        return self.stack.push_bytes(a|b)
+        item1 = self.stack.pop_int()
+        item2 = self.stack.pop_int()
+        return self.stack.push_int(item1 | item2)
 
     #OPCODE     GAS
     #18         3  
     def XOR(self) -> bytearray: #TODO figure out return type
         #BITWISE XOR
-        a = self.stack.pop_bytes()
-        b = self.stack.pop_bytes()
-        return self.stack.push_bytes(a^b)
+        item1 = self.stack.pop_int()
+        item2 = self.stack.pop_int()
+        return self.stack.push_int(item1 ^ item2)
 
     #OPCODE     GAS
     #19         3  
     def NOT(self) -> bytearray: #TODO figure out return type
         #BITWISE NOT
-        a = self.stack.pop_bytes()
         #OR TRY
-        #return self.stack.push_bytes(max_value - value)
-        return self.stack.push_bytes(~a)
+        item1 = self.stack.pop_int()
+        return self.stack.push_int(max_value- item1)
         
 
     #OPCODE     GAS
@@ -291,39 +290,39 @@ class Instructions:
         #offset and byte value
         #(i:int (position),x:bytes (value))
         #RETRIEVE SINGLE BYTE FROM WORD
-        pos = self.stack.pop_bytes()
-        val = self.stack.pop_bytes()
+        pos = self.stack.pop_int()
+        val = self.stack.pop_int()
 
         if pos >= 32:
             result = 0
         else:
             result = (val // pow(256, 31 - pos)) % 256
 
-        return self.stack.push_bytes(result)
+        return self.stack.push_int(result)
 
     #OPCODE     GAS
     #1B         3  
     def SHL(self)  -> bytes:
         #(shift:int (bits),value:bytes(value))
         #SHIFT shift VALUE value to the LEFT
-        shift = self.stack.pop_bytes()
-        val = self.stack.pop_bytes()
+        shift = self.stack.pop_int()
+        val = self.stack.pop_int()
         if(shift> 255):
-            return self.stack.push_bytes(0)
+            return self.stack.push_int(0)
 
-        return self.stack.push_bytes(val << shift)
+        return self.stack.push_int(val << shift)
 
     #OPCODE     GAS
     #1C         3  
     def SHR(self) -> bytes:
         #(shift:int (bits),value:bytes(value))
         #SHIFT shift VALUE value to the RIGHT
-        shift = self.stack.pop_bytes()
-        val = self.stack.pop_bytes()
+        shift = self.stack.pop_int()
+        val = self.stack.pop_int()
         if(shift> 255):
-            return self.stack.push_bytes(0)
+            return self.stack.push_int(0)
 
-        return self.stack.push_bytes(val >> shift)
+        return self.stack.push_int(val >> shift)
 
     #UNFINISHED  - More info: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-145.md
     # Implementation here from EIP https://github.com/ethereum/aleth/pull/4054/files
@@ -334,12 +333,12 @@ class Instructions:
         #(shift:int,value:bytes) --- IS SIGNED, similar to previous
         #Shift the bits towards the least significant one. The bits moved before the first one are discarded, 
         #the new bits are set to 0 if the previous most significant bit was 0, otherwise the new bits are set to 1.
-        shift = self.stack.pop_bytes()
-        val = self.stack.pop_bytes()
+        shift = self.stack.pop_int()
+        val = self.stack.pop_int()
         if(shift> 255):
-            return self.stack.push_bytes(0)
+            return self.stack.push_int(0)
         
-        return self.stack.push_bytes(val >> shift)
+        return self.stack.push_int(val >> shift)
 
 
 
@@ -354,8 +353,8 @@ class Instructions:
     def SHA3(self) -> bytes:
         #(offset:int,size:int)
         #Compute Keccak-256 hash
-        offset = self.stack.pop_bytes()
-        size = self.stack.pop_bytes()
+        offset = self.stack.pop_int()
+        size = self.stack.pop_int()
 
         loaded_value = self.memory.load(offset, size)
 
@@ -549,16 +548,16 @@ class Instructions:
     #51         3 dynamic  
     def MLOAD(self) -> bytes:
         #Load word from memory
-        offset = self.stack.pop_bytes()
+        offset = self.stack.pop_int()
         size=32
-        return self.memory.load(offset,size)
+        return self.stack.push_bytes(self.memory.load(offset,size))
 
     #TODO - STORE BYTES OR INT IN STACK?? CHECK CONVERSION FROM BYTES with .to_bytes
     #OPCODE     GAS
     #52         3 dynamic    
     def MSTORE(self):
         #Save word to memory
-        offset = self.stack.pop_bytes()
+        offset = self.stack.pop_int()
         value = self.stack.pop_int()
 
         processed_value = value.to_bytes(32, 'big')
@@ -569,68 +568,90 @@ class Instructions:
         #     value += bytes(32 - length)
         print(f"Processed value {processed_value}")
 
-        self.memory.store(offset,processed_value)
-
-        return None
+        return self.memory.store(offset,processed_value)
 
     #TODO add validation!!!
     #OPCODE     GAS
     #53         3 dynamic    
     def MSTORE8(self):
         #Save word to memory
-        offset = self.stack.pop_bytes()
-        value = self.stack.pop_bytes()
+        offset = self.stack.pop_int()
+        value = self.stack.pop_int()
 
-        self.memory.store8(offset,value)
-        return None
+        return self.memory.store8(offset,value)
 
     #OPCODE     GAS
     #54         100 dynamic    
     def SLOAD(self) -> int:
         #Load word from storage
-        key = self.stack.pop_bytes()
+        key = self.stack.pop_int()
 
-        processed_key = key.to_bytes(32, 'big')
+        # processed_key = key.to_bytes(32, 'big')
 
-        return self.storage.load(processed_key)
+        return self.stack.push_int(self.storage.load(key))
 
     #OPCODE     GAS
     #55         100 dynamic  
     def SSTORE(self):
         #Save word to storage
-        key = self.stack.pop_bytes()
-        value = self.stack.pop_bytes()
+        key = self.stack.pop_int()
+        value = self.stack.pop_int()
+        #delete later
+        # processed_key = key.to_bytes(32, 'big')
+        # processed_value = value.to_bytes(32, 'big')
 
-        processed_key = key.to_bytes(32, 'big')
-        processed_value = value.to_bytes(32, 'big')
-
-        self.storage.store(processed_key,processed_value)
+        return self.storage.store(key,value)
 
 
     #OPCODE     GAS
     #56         8  
-    def JUMP(counter:int):
+    def JUMP(self):
         #Alter the program counter
-        return None
+        offset = self.stack.pop_int()
+        print(f"JUMPDEST {offset}")
+        next_opcode = self.executor.check_opcode_at_pc(offset)
+        print(f"NEXT OPCODE {next_opcode}")
+        if(next_opcode and next_opcode["name"]== "JUMPDEST"):
+            self.executor.set_pc(offset)
+            print("good destination")
+            return offset
+        else:
+            print("Revert")
+            return "STOPPED"
 
 
     #OPCODE     GAS
     #57         10
-    def JUMPI(counter:int,b:bytes):
+    def JUMPI(self):
         #Conditionally alter the program counter
-        return None
+        offset = self.stack.pop_int()
+        condition = self.stack.pop_int()
+        print(f"JUMPDEST {offset}")
+        next_opcode = self.executor.check_opcode_at_pc(offset)
+        print(f"NEXT OPCODE {next_opcode}")
+        if(condition):
+            if(next_opcode and next_opcode["name"]== "JUMPDEST"):
+                self.executor.set_pc(offset)
+                print("good destination")
+                return offset
+            else:
+                print("Revert")
+                return "STOPPED"
+        else:
+            print("Jumping condition failed")
+            return None
 
     #OPCODE     GAS
     #58         2  
-    def PC() -> bytes:
+    def PC(self) -> int:
         #Get the value of the program counter prior to the increment corresponding to this instruction
-        return None
+        return self.stack.push_int(self.executor.pc-1) 
 
     #OPCODE     GAS
     #59         2
     def MSIZE(self) -> int:
         #Get the size of active memory in bytes
-        return self.memory.size() 
+        return self.stack.push_int(self.memory.size()) 
         
 
     #OPCODE     GAS
@@ -641,7 +662,7 @@ class Instructions:
 
     #OPCODE     GAS
     #5B         1 
-    def JUMPDEST():
+    def JUMPDEST(self):
         #Mark a valid destination for jumpADD
         return None
 

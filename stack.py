@@ -16,31 +16,25 @@ class Stack:
 
     def push_bytes(self,item):
         self.stack.append(item)
-        # print_deque(self.stack)
         return item
     
     def push_int(self,item):
-        print(item.bit_length() )
         item = item.to_bytes((item.bit_length() + 7) // 8, byteorder = 'big')
         self.stack.append(item)
-        # print_deque(self.stack)
         return item
 
     def pop_bytes(self) -> bytes:
         popped = self.stack.pop()
-        # print_deque(self.stack)
         return popped
     
     def pop_int(self) -> int:
         popped = int.from_bytes(self.stack.pop(),byteorder="big")
-        # print_deque(self.stack)
         return popped
     
     #Duplicate
     def duplicate(self,offset:int):
         item = self.stack[len(self.stack) - offset]
         self.stack.append(item)  
-        # print_deque(self.stack)
         return item
 
     #Swap
@@ -52,7 +46,6 @@ class Stack:
         self.stack.append(item_to_top)
         del self.stack[swap_index]
         self.stack.insert((len(self.stack) - offset), item_to_swap)
-        # print_deque(self.stack)
         return item_to_top
     
     #Swap
