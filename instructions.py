@@ -472,61 +472,64 @@ class Instructions:
 
     #Block Information
 
-
+    #NOT DONE - IMPLEMENT HASH HISTORY LATER
     #OPCODE     GAS
     #40         20 
-    def BLOCKHASH(block_number:int) -> bytes:
+    def BLOCKHASH(self):
         #Get the hash of one of the 256 most recent complete blocks
-        return None
+        offset = self.stack.pop_int()
+        if(offset < 0 or offset >= 256):
+            return self.stack.push_int(0)
+        return self.stack.push_bytes(self.executor.execution_context.block_hash)
 
     #OPCODE     GAS
     #41         2
-    def COINBASE() -> bytes:
-        #Get the block’s beneficiary address
-        return None
+    def COINBASE(self):
+        #Get the block’s beneficiary address (miner, proposer)
+        return self.stack.push_bytes(self.executor.execution_context.coinbase)
 
     #OPCODE     GAS
     #42         2  
-    def TIMESTAMP() -> bytes:
+    def TIMESTAMP(self):
         #Get the block’s timestamp
-        return None
+        return self.stack.push_int(self.executor.execution_context.timestamp)
 
     #OPCODE     GAS
     #43         2  
-    def NUMBER() -> int:
+    def NUMBER(self):
         #Get the block’s number
-        return None
+        return self.stack.push_int(self.executor.execution_context.block_number)
 
     #OPCODE     GAS
     #44         2  
-    def DIFFICULTY() -> int:
+    def DIFFICULTY(self):
         #Get the block’s difficulty
-        return None
+        return self.stack.push_int(self.executor.execution_context.block_difficulty)
 
     #OPCODE     GAS
     #45         2  
-    def GASLIMIT() -> bytes:
+    def GASLIMIT(self):
         #Get the block’s gas limit
-        return None
+        return self.stack.push_int(self.executor.execution_context.gas_limit)
 
     #OPCODE     GAS
     #46         2  
-    def CHAINID() -> int:
+    def CHAINID(self):
         #Get the chain ID
-        return None
+        return self.stack.push_int(self.executor.execution_context.chain_id)
 
 
     #OPCODE     GAS
     #47         5
-    def SELFBALANCE() -> int:
+    def SELFBALANCE(self):
         #Get balance of currently executing account
-        return None
+        return self.stack.push_int(self.executor.execution_context.self_balance)
 
     #OPCODE     GAS
     #48         2  
-    def BASEFEE() -> int:
+    def BASEFEE(self):
         #Get the base fee
-        return None
+        return self.stack.push_int(self.executor.execution_context.base_fee)
 
 
 

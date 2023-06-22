@@ -1,15 +1,16 @@
 from stack import Stack
 from memory import Memory
 from instructions import Instructions
-
+from execution_context import ExecutionContext
 
 
 
 class Executor:
 
-    def __init__(self, bytecode:bytearray,opcodes_list:list,starting_gas:int) -> None:
+    def __init__(self, bytecode:bytearray,execution_context:ExecutionContext,opcodes_list:list,starting_gas:int) -> None:
         self.instructions = Instructions(self)
         self.bytecode = bytecode
+        self.execution_context=execution_context
         self.opcodes_list = opcodes_list
         self.gas_remaining = starting_gas
         self.gas_starting = starting_gas
