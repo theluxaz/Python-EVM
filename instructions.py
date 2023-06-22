@@ -350,7 +350,7 @@ class Instructions:
 
     #OPCODE     GAS
     #20         30+   dynamic  
-    def SHA3(self) -> bytes:
+    def SHA3(self):
         #(offset:int,size:int)
         #Compute Keccak-256 hash
         offset = self.stack.pop_int()
@@ -448,15 +448,28 @@ class Instructions:
 
     #OPCODE     GAS
     #3B         100 dynamic  
-    def EXTCODESIZE(self,address:bytes) -> int:
+    def EXTCODESIZE(self):
         #Get size of an account’s code
-        return None
-
+        address = self.stack.pop_int()
+        if(address):
+            return self.stack.push_int(len(bytearray.fromhex(self.executor.execution_context.external_contracts[address])))
+        else:
+            return self.stack.push_int(0)
+        
     #OPCODE     GAS
     #3C         100 dynamic  
-    def EXTCODECOPY(self,address:bytes,dest_offset:int, offset:int,size:int):
+    def EXTCODECOPY(self):
         #Copy an account’s code to memory
-        return None
+        #(self,addressbytes,dest_offset:int, offset:int,size:int)
+        address = self.stack.pop_int()
+        mem_offset = self.stack.pop_int()
+        bytecode_offset = self.stack.pop_int()
+        size = self.stack.pop_int()
+        if(address):
+            return self.memory.store(mem_offset,bytearray.fromhex(self.executor.execution_context.external_contracts[address][bytecode_offset : bytecode_offset + size]))
+        else:
+            return self.stack.push_int(0)
+
 
     #OPCODE     GAS
     #3D         2  
@@ -472,10 +485,14 @@ class Instructions:
 
     #OPCODE     GAS
     #3F         100 dynamic  
-    def EXTCODEHASH(self,ADDRESS:bytes) -> bytes:
+    def EXTCODEHASH(self):
         #Get hash of an account’s code
-        return None
-
+        address = self.stack.pop_int()
+        if(address):
+            hashed_value = keccak(bytearray.fromhex(self.executor.execution_context.external_contracts[address]))
+            return self.stack.push_bytes(hashed_value)
+        else:
+            return self.stack.push_int(0)
 
 
 
