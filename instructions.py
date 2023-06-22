@@ -368,99 +368,111 @@ class Instructions:
 
     #OPCODE     GAS
     #30         2 
-    def ADDRESS() -> bytes:
-        #gets address of msg.sender
+    def ADDRESS(self):
+        #gets address of current execution account
         return None
 
     #OPCODE     GAS
     #31         100 hot 3200 cold  dynamic  
-    def BALANCE(address:bytes) -> int:
+    def BALANCE(self):
         #Checks the balance of given address
         return None
 
     #OPCODE     GAS
     #32         2  
-    def ORIGIN() -> bytes:
+    def ORIGIN(self):
         #Get execution origination address
-        return None
+        return self.stack.push_bytes(self.executor.transaction_context.origin_address)
 
     #OPCODE     GAS
     #33         2  
-    def CALLER() -> bytes:
-        #Get caller address
-        return None
+    def CALLER(self):
+        #Get address of msg.sender
+        return self.stack.push_bytes(self.executor.transaction_context.sender_address)
 
     #OPCODE     GAS
     #34         2  
-    def CALLVALUE() -> int:
+    def CALLVALUE(self):
         #Get deposited value by the instruction/transaction responsible for this execution
-        return None
+        return self.stack.push_int(self.executor.transaction_context.value)
 
+    #TODO, CHECK IF WHOLE 32bit WORD SHOULD BE RETURNED
     #OPCODE     GAS
     #35         3  
-    def CALLDATALOAD(i:int) -> bytes:
-        #byte offset i, Get input data of current environment
-        return None
+    def CALLDATALOAD(self):
+        #byte offset i, Get input data of calldata
+        offset = self.stack.pop_int()
+        word_length=32
+        return self.stack.push_bytes(self.executor.transaction_context.data[offset : offset + word_length])
 
     #OPCODE     GAS
     #36         2  
-    def CALLDATASIZE() -> int:
-        #Get size of input data in current environment
-        return None
+    def CALLDATASIZE(self):
+        #Get size of input data of calldata
+        return self.stack.push_int(len(self.executor.transaction_context.data))
 
 
     #OPCODE     GAS
     #37         3 dynamic
-    def CALLDATACOPY(dest_offset:int, offset:int,size:int):
-        #Copy input data in current environment to memory
-        return None
+    def CALLDATACOPY(self):
+        #Copy input data in calldata to memory
+        #(self,dest_offset:int, offset:int,size:int)
+        mem_offset = self.stack.pop_int()
+        calldata_offset = self.stack.pop_int()
+        size = self.stack.pop_int()
+
+        return self.memory.store(mem_offset,self.executor.transaction_context.data[calldata_offset : calldata_offset + size])
 
     #OPCODE     GAS
     #38         2  
-    def CODESIZE() -> int:
+    def CODESIZE(self) -> int:
         #Get size of code running in current environment
-        return None
+        return self.stack.push_int(len(self.executor.bytecode))
 
     #OPCODE     GAS
     #39         3 dynamic
-    def CODECOPY(dest_offset:int, offset:int,size:int) -> int:
+    def CODECOPY(self):
         #Copy code running in current environment to memory
-        return None 
+        #(self,dest_offset:int, offset:int,size:int)
+        mem_offset = self.stack.pop_int()
+        bytecode_offset = self.stack.pop_int()
+        size = self.stack.pop_int()
+        return self.memory.store(mem_offset,self.executor.bytecode[bytecode_offset : bytecode_offset + size])
         
 
     #OPCODE     GAS
     #3A         2  
-    def GASPRICE() -> int:
+    def GASPRICE(self):
         #Get price of gas in current environment
-        return None
+        return self.stack.push_int(self.executor.transaction_context.gas_price)
 
     #OPCODE     GAS
     #3B         100 dynamic  
-    def EXTCODESIZE(address:bytes) -> int:
+    def EXTCODESIZE(self,address:bytes) -> int:
         #Get size of an account’s code
         return None
 
     #OPCODE     GAS
     #3C         100 dynamic  
-    def EXTCODECOPY(address:bytes,dest_offset:int, offset:int,size:int):
+    def EXTCODECOPY(self,address:bytes,dest_offset:int, offset:int,size:int):
         #Copy an account’s code to memory
         return None
 
     #OPCODE     GAS
     #3D         2  
-    def RETURNDATASIZE() -> int:
+    def RETURNDATASIZE(self) -> int:
         #Get size of output data from the previous call from the current environment
         return None
 
     #OPCODE     GAS
     #3E         3  dynamic
-    def RETURNDATACOPY(dest_offset:int, offset:int,size:int):
+    def RETURNDATACOPY(self,dest_offset:int, offset:int,size:int):
         #Copy output data from the previous call to memory
         return None
 
     #OPCODE     GAS
     #3F         100 dynamic  
-    def EXTCODEHASH(ADDRESS:bytes) -> bytes:
+    def EXTCODEHASH(self,ADDRESS:bytes) -> bytes:
         #Get hash of an account’s code
         return None
 

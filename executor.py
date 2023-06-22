@@ -2,18 +2,18 @@ from stack import Stack
 from memory import Memory
 from instructions import Instructions
 from execution_context import ExecutionContext
-
-
+from transaction_context import TransactionContext
+from opcode_list import opcodes_list
 
 class Executor:
 
-    def __init__(self, bytecode:bytearray,execution_context:ExecutionContext,opcodes_list:list,starting_gas:int) -> None:
+    def __init__(self, bytecode:bytearray,execution_context:ExecutionContext,transaction_context:TransactionContext) -> None:
         self.instructions = Instructions(self)
         self.bytecode = bytecode
         self.execution_context=execution_context
-        self.opcodes_list = opcodes_list
-        self.gas_remaining = starting_gas
-        self.gas_starting = starting_gas
+        self.transaction_context=transaction_context
+        self.gas_remaining = transaction_context.gas
+        self.gas_starting = transaction_context.gas
         self.pc = 0
         self.stopped = False
 
@@ -57,12 +57,12 @@ class Executor:
     
     def get_next_opcode(self):
         mnemonic = self.process_bytecode(1)
-        opcode = [x for x in self.opcodes_list if x['mnemonic'] == int.from_bytes(mnemonic, byteorder="big")][0]
+        opcode = [x for x in opcodes_list if x['mnemonic'] == int.from_bytes(mnemonic, byteorder="big")][0]
         return opcode
     
     def check_opcode_at_pc(self,offset):
         mnemonic = self.bytecode[offset : offset+1]
-        opcode = [x for x in self.opcodes_list if x['mnemonic'] == int.from_bytes(mnemonic, byteorder="big")][0]
+        opcode = [x for x in opcodes_list if x['mnemonic'] == int.from_bytes(mnemonic, byteorder="big")][0]
         return opcode
     
     def set_pc(self,pc):

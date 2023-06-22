@@ -1,4 +1,4 @@
-
+from utils import print_memory
 
 # 0x51    MLOAD       Load word from memory
 # 0x52    MSTORE      Save word to memory
@@ -19,9 +19,8 @@ class Memory:
              
 
         for index, byte in enumerate(value):
-                print(f"index {index}")
-                print(f"byte {byte}")
                 self.bytes_array[offset + index] = byte
+        print_memory(self.bytes_array)
         return value
 
     def store8(self, offset: int, value:int) -> None:
@@ -34,16 +33,13 @@ class Memory:
             self.bytes_array.extend(bytearray((offset+word_length)-len(self.bytes_array)))
             print(self.bytes_array)
              
-        print(offset)
-        print(type(offset))
-        # self.bytes_array[:offset] + value + self.bytes_array[offset][offset + 1:]
         self.bytes_array[offset] = value
+        print_memory(self.bytes_array)
         return value
 
     def load(self, offset: int, size:int) -> bytes:
         # try memoryview() ??
         result = self.bytes_array[offset : offset + size]
-        print(result)
         return result
 
     def size(self) -> None:
