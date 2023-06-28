@@ -55,24 +55,24 @@ To do later.
 - [x] Stack
 - [x] Memory
 - [x] Storage
-- [] Gas (Static gas completed.)
-- [] System 
-
-- [] Opcodes (In progress...)
-
+- [ ] Gas (Static gas completed.)
+- [ ] System     
+<br/>
+- [ ] Opcodes (In progress...)
+<br/>
 
 - [x] Stop and Arithmetic Operations
 - [x] Comparison & Bitwise Logic Operations
 - [x] SHA3
-- [] Environmental Information
+- [ ] Environmental Information
 - [x] Block Information
 - [x] Stack, Memory, Storage and Flow Operations
 - [x] Push Operations
 - [x] Duplication Operations
 - [x] Exchange Operations
-- [] Logging Operations
-- [] System operations
-- [] Halt Execution, Mark for deletion Operations
+- [ ] Logging Operations
+- [ ] System operations
+- [ ] Halt Execution, Mark for deletion Operations
 
 
 <!-- DAILY -->
