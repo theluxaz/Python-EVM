@@ -52,10 +52,46 @@ To do later.
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Stack
-- [ ] Memory
-- [ ] Opcodes
+- [x] Stack
+- [x] Memory
+- [x] Storage
+- [] Gas (Static gas completed.)
+- [] System 
 
+- [] Opcodes (In progress...)
+
+
+- [x] Stop and Arithmetic Operations
+- [x] Comparison & Bitwise Logic Operations
+- [x] SHA3
+- [] Environmental Information
+- [x] Block Information
+- [x] Stack, Memory, Storage and Flow Operations
+- [x] Push Operations
+- [x] Duplication Operations
+- [x] Exchange Operations
+- [] Logging Operations
+- [] System operations
+- [] Halt Execution, Mark for deletion Operations
+
+
+<!-- DAILY -->
+## Daily Progress
+
+### Day 1: (June 15)
+Set up architecture, file structure, listed all opcodes with their gas and mnemonics.
+
+### Day 2: (June 19)
+Implemented arithmetic, comparison and bitwise operation opcodes.
+
+### Day 3: (June 20)
+Implemented memory, storage, PUSH, DUP and SWAP opcodes.
+
+### Day 4: (June 21)
+Reworked stack to work with bytes, tested and fixed all the previously added opcode implementations. Added JUMP and GAS functionality.
+
+### Day 5: (June 22)
+Added functionality for both execution and transaction context. Added instruction related to them such as CALLDATACOPY or GASLIMIT. Added EXTCODESIZE, EXTCODECOPY and EXTCODEHASH.
 
 
 
