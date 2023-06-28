@@ -52,14 +52,16 @@ To do later.
 <!-- ROADMAP -->
 ## Roadmap
 
+#### EVM:
+
 - [x] Stack
 - [x] Memory
 - [x] Storage
 - [ ] Gas (Static gas completed.)
 - [ ] System     
 <br/>
-- [ ] Opcodes (In progress...)
-<br/>
+
+#### Opcodes:
 
 - [x] Stop and Arithmetic Operations
 - [x] Comparison & Bitwise Logic Operations
