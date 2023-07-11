@@ -72,7 +72,7 @@ To do later.
 - [x] Push Operations
 - [x] Duplication Operations
 - [x] Exchange Operations
-- [ ] Logging Operations
+- [x] Logging Operations
 - [ ] System operations
 - [ ] Halt Execution, Mark for deletion Operations
 
@@ -95,6 +95,8 @@ Reworked stack to work with bytes, tested and fixed all the previously added opc
 ### Day 5: (June 22)
 Added functionality for both execution and transaction context. Added instruction related to them such as CALLDATACOPY or GASLIMIT. Added EXTCODESIZE, EXTCODECOPY and EXTCODEHASH.
 
+### Day 6: (July 11)
+Added functionality for ADDRESS and BALANCE. Added logging opcodes such as LOG0. Started refactoring application to accommodate CREATE instructions.
 
 
 <!-- LICENSE -->
