@@ -3,6 +3,7 @@ from memory import Memory
 from storage import Storage
 from utils import signed_to_unsigned,unsigned_to_signed
 from eth_hash.auto import keccak
+# import rlp
 
 max_value = 2**256 - 1
 max_ceiling = 2**256 
@@ -370,13 +371,18 @@ class Instructions:
     #30         2 
     def ADDRESS(self):
         #gets address of current execution account
-        return None
+        return self.stack.push_int(self.executor.address)
 
     #OPCODE     GAS
     #31         100 hot 3200 cold  dynamic  
     def BALANCE(self):
         #Checks the balance of given address
-        return None
+        address = self.stack.pop_int()
+        if(address):
+            return self.stack.push_int(self.executor.execution_context.external_contracts[address]["balance"])
+        else:
+            return self.stack.push_int(0)
+        
 
     #OPCODE     GAS
     #32         2  
@@ -452,7 +458,7 @@ class Instructions:
         #Get size of an account’s code
         address = self.stack.pop_int()
         if(address):
-            return self.stack.push_int(len(bytearray.fromhex(self.executor.execution_context.external_contracts[address])))
+            return self.stack.push_int(len(bytearray.fromhex(self.executor.execution_context.external_contracts[address]["bytecode"])))
         else:
             return self.stack.push_int(0)
         
@@ -466,7 +472,7 @@ class Instructions:
         bytecode_offset = self.stack.pop_int()
         size = self.stack.pop_int()
         if(address):
-            return self.memory.store(mem_offset,bytearray.fromhex(self.executor.execution_context.external_contracts[address][bytecode_offset : bytecode_offset + size]))
+            return self.memory.store(mem_offset,bytearray.fromhex(self.executor.execution_context.external_contracts[address]["bytecode"][bytecode_offset : bytecode_offset + size]))
         else:
             return self.stack.push_int(0)
 
@@ -475,12 +481,14 @@ class Instructions:
     #3D         2  
     def RETURNDATASIZE(self) -> int:
         #Get size of output data from the previous call from the current environment
+        print("UNFINISHED")
         return None
 
     #OPCODE     GAS
     #3E         3  dynamic
     def RETURNDATACOPY(self,dest_offset:int, offset:int,size:int):
         #Copy output data from the previous call to memory
+        print("UNFINISHED")
         return None
 
     #OPCODE     GAS
@@ -489,7 +497,7 @@ class Instructions:
         #Get hash of an account’s code
         address = self.stack.pop_int()
         if(address):
-            hashed_value = keccak(bytearray.fromhex(self.executor.execution_context.external_contracts[address]))
+            hashed_value = keccak(bytearray.fromhex(self.executor.execution_context.external_contracts[address]["bytecode"]))
             return self.stack.push_bytes(hashed_value)
         else:
             return self.stack.push_int(0)
@@ -649,7 +657,8 @@ class Instructions:
             return offset
         else:
             print("Revert")
-            return "STOPPED"
+            self.executor.reverted = True
+            return "REVERT"
 
 
     #OPCODE     GAS
@@ -668,7 +677,8 @@ class Instructions:
                 return offset
             else:
                 print("Revert")
-                return "STOPPED"
+                self.executor.reverted = True
+                return "REVERT"
         else:
             print("Jumping condition failed")
             return None
@@ -1128,33 +1138,75 @@ class Instructions:
 
     #OPCODE     GAS
     #A0         375 dynamic 
-    def LOG0(offset:bytes,size:int):
+    def LOG0(self):
         #Append log record with no topics
-        return None
+        mem_offset = self.stack.pop_int()
+        size = self.stack.pop_int()
+        
+        data = self.memory.load(mem_offset,size)
+        log = {"account":self.executor.address,"topics":None,"data":data}
+        
+        return self.executor.logs.append(log)
 
     #OPCODE     GAS
     #A1         750 dynamic 
-    def LOG1(offset:bytes,size:int,topic1:bytes):
+    def LOG1(self):
         #Append log record with 1 topic
-        return None
+        
+        #Append log record with no topics
+        mem_offset = self.stack.pop_int()
+        size = self.stack.pop_int()
+        topic1 = self.stack.pop_bytes()
+        
+        data = self.memory.load(mem_offset,size)
+        log = {"account":self.executor.address,"topics":[topic1],"data":data}
+        
+        return self.executor.logs.append(log)
 
     #OPCODE     GAS
     #A2         1125 dynamic   
-    def LOG2(offset:bytes,size:int,topic1:bytes,topic2:bytes):
-        #Append log record with 2 topics
-        return None
+    def LOG2(self):
+        #Append log record with 2 topic
+        mem_offset = self.stack.pop_int()
+        size = self.stack.pop_int()
+        topic1 = self.stack.pop_bytes()
+        topic2 = self.stack.pop_bytes()
+        
+        data = self.memory.load(mem_offset,size)
+        log = {"account":self.executor.address,"topics":[topic1,topic2],"data":data}
+        
+        return self.executor.logs.append(log)
 
     #OPCODE     GAS
     #A3         1500 dynamic   
-    def LOG3(offset:bytes,size:int,topic1:bytes,topic2:bytes,topic3:bytes):
-        #Append log record with 3 topics
-        return None
+    def LOG3(self):
+        #Append log record with 3 topic
+        mem_offset = self.stack.pop_int()
+        size = self.stack.pop_int()
+        topic1 = self.stack.pop_bytes()
+        topic2 = self.stack.pop_bytes()
+        topic3 = self.stack.pop_bytes()
+        
+        data = self.memory.load(mem_offset,size)
+        log = {"account":self.executor.address,"topics":[topic1,topic2,topic3],"data":data}
+        
+        return self.executor.logs.append(log)
 
     #OPCODE     GAS
     #A4         1875 dynamic   
-    def LOG4(offset:bytes,size:int,topic1:bytes,topic2:bytes,topic3:bytes,topic4:bytes):
-        #Append log record with 4 topics
-        return None
+    def LOG4(self):
+        #Append log record with 4 topic
+        mem_offset = self.stack.pop_int()
+        size = self.stack.pop_int()
+        topic1 = self.stack.pop_bytes()
+        topic2 = self.stack.pop_bytes()
+        topic3 = self.stack.pop_bytes()
+        topic4 = self.stack.pop_bytes()
+        
+        data = self.memory.load(mem_offset,size)
+        log = {"account":self.executor.address,"topics":[topic1,topic2,topic3,topic4],"data":data}
+        
+        return self.executor.logs.append(log)
 
 
 
@@ -1166,44 +1218,71 @@ class Instructions:
 
     #OPCODE     GAS
     #F0         32000 dynamic   
-    def CREATE(value:int,offset:bytes,size:int) -> bytes:
+    def CREATE(self) -> bytes:
         #Create a new account with associated code
-        return None
+        value = self.stack.pop_int()
+        mem_offset = self.stack.pop_int()
+        size = self.stack.pop_int()
+        
+        data = self.memory.load(mem_offset,size)
+        
+        sender = self.executor.transaction_context.sender_address
+        nonce = self.executor.transaction_context.sender_nonce
+        
+        new_address = keccak(rlp.encode([sender, nonce]))[12:]
+        
+        # trimmed_value = value[-20:]   #alternative
+        # padded_value = trimmed_value.rjust(20, b'\x00')   #alternative
+        
+        if(new_address):
+            return self.stack.push_int(new_address)
+        else:
+            return self.stack.push_int(0)
 
     #OPCODE     GAS
     #F1         100 dynamic   
     def CALL(gas:int,address:bytes,value:int,args_offset:bytes,args_size:int,ret_offset:bytes,ret_size:int) -> int:
         #Message-call into an account
+        print("UNFINISHED")
         return None
 
     #OPCODE     GAS
     #F2         100 dynamic     
     def CALLCODE(gas:int,address:bytes,value:int,args_offset:bytes,args_size:int,ret_offset:bytes,ret_size:int) -> bytes:
         #Message-call into this account with alternative account’s code
+        print("UNFINISHED")
         return None
 
     #OPCODE     GAS
     #F3         0 dynamic     
-    def RETURN(offset:bytes,size:int) -> bytes:
+    def RETURN(self) -> bytes:
         #Halt execution returning output data
-        return None
+        mem_offset = self.stack.pop_int()
+        size = self.stack.pop_int()
+        data = self.memory.load(mem_offset,size)
+        
+        self.executor.returned = True
+        return data
 
     #OPCODE     GAS
     #F4         100 dynamic     
     def DELEGATECALL(gas:int,address:bytes,value:int,args_offset:bytes,args_size:int,ret_offset:bytes,ret_size:int) -> int:
         #Message-call into this account with an alternative account’s code, but persisting the current values for sender and value
+        print("UNFINISHED")
         return None
 
     #OPCODE     GAS
     #F5         32000 dynamic     
     def CREATE2(value:int,offset:bytes,size:int,salt:bytes) -> bytes:
         #Create a new account with associated code at a predictable address
+        print("UNFINISHED")
         return None
 
     #OPCODE     GAS
     #FA         100 dynamic     
     def STATICCALL(gas:int,address:bytes,value:int,args_offset:bytes,args_size:int,ret_offset:bytes,ret_size:int) -> int:
         #Static message-call into an account
+        print("UNFINISHED")
         return None
 
 
@@ -1211,17 +1290,20 @@ class Instructions:
     #FD         0 dynamic   
     def REVERT(self):
         #Halt execution reverting state changes but returning data and remaining gas
-        return "Stopped"
+        self.executor.reverted = True
+        return "Revert"
 
     #OPCODE     GAS
     #FE         NaN dynamic  
     def INVALID(self) -> int:
         #Designated invalid instruction
+        self.executor.stopped = True
         return "Stopped"
 
     #OPCODE     GAS
     #FF         5000 dynamic   
     def SELFDESTRUCT(address:bytes):
         #Halt execution and register account for later deletion
+        print("UNFINISHED")
         return None 
         

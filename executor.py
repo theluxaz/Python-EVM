@@ -12,28 +12,35 @@ class Executor:
         self.bytecode = bytecode
         self.execution_context=execution_context
         self.transaction_context=transaction_context
+        self.address = execution_context.self_address
         self.gas_remaining = transaction_context.gas
         self.gas_starting = transaction_context.gas
+        self.logs = []
         self.pc = 0
         self.stopped = False
+        self.reverted = False
+        self.returned = False
 
     #main processing loop
     def run(self):
-        while not self.stopped:
+        while not self.stopped and not self.reverted and not self.returned:
             print("") 
             instruction = self.get_next_opcode()
             self.gas_remaining = self.gas_remaining - instruction["gas"]
             if (self.pc > len(self.bytecode)):
                 print("STOPPING RUNTIME - CODE FINISHED")
                 print()
+                self.stopped == True
                 return "Stopped"
-            elif (instruction["name"]== "STOP"):
-                print("STOPPING RUNTIME - STOP COMMAND")
-                print()
-                return "Stopped"
+            # elif (instruction["name"]== "STOP"):
+            #     print("STOPPING RUNTIME - STOP COMMAND")
+            #     print()
+            #     self.stopped == True
+            #     return "Stopped"
             elif (self.gas_remaining < 0):
                 print("STOPPING RUNTIME - OUT OF GAS")
                 print()
+                self.stopped == True
                 return "Stopped"
             print(f"Opcode Instruction  is : {instruction}")
 
@@ -41,6 +48,17 @@ class Executor:
             result = processing_function()
 
             self.instructions.stack.print()
+            
+            if(self.returned):
+                return result
+            elif(self.reverted):
+                #TODO IMPLEMENT REVERT FUNCTIONALITY
+                return "REVERT"
+            elif(self.stopped):
+                #TODO IMPLEMENT STOPPED FUNCTIONALITY
+                return "STOPPED EXECUTION"
+            
+            print(result)
             if(result):
                 if(type(result) == int):
                     print(f"Processing result is : int {result}")
@@ -68,6 +86,18 @@ class Executor:
     def set_pc(self,pc):
         self.pc = pc
         return pc
+    
+    def print_logs(self):
+        for log in self.logs:
+            print(f"Log: account={log['account']}   topics={get_bytearray_list_to_string(log['topics'])}   data={log['data'].hex()}")
+            
+def get_bytearray_list_to_string(data_array):
+    result = ""
+    for item in data_array:
+        if(len(result) >1):
+            result += ", "
+        result += item.hex()
+    return result
     
 
 

@@ -13,6 +13,7 @@ class ExecutionContext:
                  chain_id:int, 
                  base_fee:int,
                  self_balance:int,
+                 self_address:bytearray,
                  external_contracts:dict
                  ) -> None:
                  
@@ -25,5 +26,6 @@ class ExecutionContext:
         self.chain_id = chain_id
         self.base_fee = base_fee
         self.self_balance = self_balance
+        self.self_address = self_address
         self.external_contracts = external_contracts
         
