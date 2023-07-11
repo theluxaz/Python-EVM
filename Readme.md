@@ -96,7 +96,7 @@ Reworked stack to work with bytes, tested and fixed all the previously added opc
 Added functionality for both execution and transaction context. Added instruction related to them such as CALLDATACOPY or GASLIMIT. Added EXTCODESIZE, EXTCODECOPY and EXTCODEHASH.
 
 ### Day 6: (July 11)
-Added functionality for ADDRESS and BALANCE. Added logging opcodes such as LOG0. Started refactoring application to accommodate CREATE instructions.
+Added functionality for ADDRESS and BALANCE. Added logging opcodes such as LOG0. Started refactoring the application to accommodate CREATE instructions.
 
 
 <!-- LICENSE -->
