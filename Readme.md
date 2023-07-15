@@ -59,6 +59,7 @@ To do later.
 - [x] Storage
 - [ ] Gas (Static gas completed.)
 - [ ] System     
+- [x] Testing
 <br/>
 
 #### Opcodes:
