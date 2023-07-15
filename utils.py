@@ -26,4 +26,5 @@ def print_memory(memory:bytearray):
     index=0
     while (index < len(memory)-1):
         print(f"Memory location {index} ---> bytes = {memory[index:index+32].hex()} ")
+        # print(f"memory length is {len(memory[index:index+32])}")
         index+=32

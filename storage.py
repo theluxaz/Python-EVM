@@ -6,6 +6,10 @@
 class Storage:
     storage = {}
     max_size_bytes = 32
+    
+    def __init__(self) :
+        print("INITIALIZING STORAGE ----------------------------------------------")
+        self.storage = {}
 
     def store(self, key: int, value:int):
         self.storage[key] = value

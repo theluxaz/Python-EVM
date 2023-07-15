@@ -4,6 +4,10 @@ from storage import Storage
 from utils import signed_to_unsigned,unsigned_to_signed
 from eth_hash.auto import keccak
 # import rlp
+# from execution_context import ExecutionContext
+# from transaction_context import TransactionContext
+# from external_contract import ExternalContract
+# from contract_instance import ContractInstance
 
 max_value = 2**256 - 1
 max_ceiling = 2**256 
@@ -33,6 +37,7 @@ class Instructions:
     def STOP(self):
         print("Execution stopped")
         self.executor.stopped = True
+        return "STOPPED"
 
 
 
@@ -44,7 +49,7 @@ class Instructions:
         #(a:int, b:int)
         a = self.stack.pop_int()
         b = self.stack.pop_int()
-        return self.stack.push_int(a+b) #possibly add this on this line  & max_value
+        return self.stack.push_int((a+b) & max_value) #possibly add this on this line  & max_value
 
     #OPCODE     GAS
     #02         5  
@@ -52,7 +57,7 @@ class Instructions:
         #(a:int, b:int)
         a = self.stack.pop_int()
         b = self.stack.pop_int()
-        return self.stack.push_int(a*b) #possibly add this on this line  & max_value
+        return self.stack.push_int((a*b) & max_value) #possibly add this on this line  & max_value
 
     #OPCODE     GAS
     #03         3  
@@ -60,7 +65,7 @@ class Instructions:
         #(a:int, b:int)
         a = self.stack.pop_int()
         b = self.stack.pop_int()
-        return self.stack.push_int(a-b) #possibly add this on this line  & max_value
+        return self.stack.push_int((a-b) & max_value) #possibly add this on this line  & max_value
 
     #OPCODE     GAS
     #04         2  
@@ -72,7 +77,7 @@ class Instructions:
         if den == 0:
             return self.stack.push_int(0)
         else:
-            return self.stack.push_int(num//den) #possibly add this on this line  & max_value
+            return self.stack.push_int((num//den) & max_value) #possibly add this on this line  & max_value
 
     #OPCODE     GAS
     #05         5  
@@ -91,8 +96,7 @@ class Instructions:
         if den == 0:
             result = 0
         else:
-            result = pos_or_neg * (abs(num) // abs(den))
-
+            result = (pos_or_neg * (abs(num) // abs(den))) 
         return self.stack.push_int(signed_to_unsigned(result)) #possibly add this on this line  & max_value
 
     #OPCODE     GAS
@@ -308,10 +312,10 @@ class Instructions:
         #SHIFT shift VALUE value to the LEFT
         shift = self.stack.pop_int()
         val = self.stack.pop_int()
-        if(shift> 255):
+        if(shift>= 256): 
             return self.stack.push_int(0)
 
-        return self.stack.push_int(val << shift)
+        return self.stack.push_int((val << shift) & max_value)
 
     #OPCODE     GAS
     #1C         3  
@@ -320,10 +324,10 @@ class Instructions:
         #SHIFT shift VALUE value to the RIGHT
         shift = self.stack.pop_int()
         val = self.stack.pop_int()
-        if(shift> 255):
+        if(shift>= 256):
             return self.stack.push_int(0)
 
-        return self.stack.push_int(val >> shift)
+        return self.stack.push_int((val >> shift)& max_value)
 
     #UNFINISHED  - More info: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-145.md
     # Implementation here from EIP https://github.com/ethereum/aleth/pull/4054/files
@@ -336,10 +340,10 @@ class Instructions:
         #the new bits are set to 0 if the previous most significant bit was 0, otherwise the new bits are set to 1.
         shift = self.stack.pop_int()
         val = self.stack.pop_int()
-        if(shift> 255):
+        if(shift>= 256):
             return self.stack.push_int(0)
         
-        return self.stack.push_int(val >> shift)
+        return self.stack.push_int((val >> shift)& max_value)
 
 
 
@@ -590,7 +594,13 @@ class Instructions:
         #Load word from memory
         offset = self.stack.pop_int()
         size=32
-        return self.stack.push_bytes(self.memory.load(offset,size))
+        loaded_data = self.memory.load(offset,size)
+
+        #DELETES TRAILING ZEROES
+        #TODO remove possibly
+        processed_data = int.from_bytes(loaded_data).to_bytes((int.from_bytes(loaded_data).bit_length() + 7) // 8, byteorder = 'big')
+        
+        return self.stack.push_bytes(processed_data)
 
     #TODO - STORE BYTES OR INT IN STACK?? CHECK CONVERSION FROM BYTES with .to_bytes
     #OPCODE     GAS
@@ -616,7 +626,7 @@ class Instructions:
     def MSTORE8(self):
         #Save word to memory
         offset = self.stack.pop_int()
-        value = self.stack.pop_int()
+        value = self.stack.pop_bytes()
 
         return self.memory.store8(offset,value)
 
@@ -651,12 +661,16 @@ class Instructions:
         print(f"JUMPDEST {offset}")
         next_opcode = self.executor.check_opcode_at_pc(offset)
         print(f"NEXT OPCODE {next_opcode}")
-        if(next_opcode and next_opcode["name"]== "JUMPDEST"):
+        
+        valid = self.executor.is_opcode_valid(offset)
+        
+        if(next_opcode and valid and next_opcode["name"]== "JUMPDEST"):
             self.executor.set_pc(offset)
             print("good destination")
             return offset
         else:
             print("Revert")
+            print("INVALID JUMP LOCATION")
             self.executor.reverted = True
             return "REVERT"
 
@@ -711,9 +725,9 @@ class Instructions:
 
     #OPCODE     GAS
     #5F         2   
-    def PUSH0() -> int:
+    def PUSH0(self) -> int:
         #Place 0 bytes item on stack
-        return 0
+        return self.stack.push_int(0)
 
 
 
@@ -1224,13 +1238,17 @@ class Instructions:
         mem_offset = self.stack.pop_int()
         size = self.stack.pop_int()
         
-        data = self.memory.load(mem_offset,size)
+        bytecode_data = self.memory.load(mem_offset,size)
         
         sender = self.executor.transaction_context.sender_address
         nonce = self.executor.transaction_context.sender_nonce
         
-        new_address = keccak(rlp.encode([sender, nonce]))[12:]
+        # new_address = keccak(rlp.encode([sender, nonce]))[12:]
+        new_address = None #replace later
         
+        # new_contract = ContractInstance(bytecode_data,ExecutionContext(*execution_context_data.values()),TransactionContext(*transaction_context_data.values()))
+        # result = target_contract.run()
+
         # trimmed_value = value[-20:]   #alternative
         # padded_value = trimmed_value.rjust(20, b'\x00')   #alternative
         
@@ -1241,8 +1259,21 @@ class Instructions:
 
     #OPCODE     GAS
     #F1         100 dynamic   
-    def CALL(gas:int,address:bytes,value:int,args_offset:bytes,args_size:int,ret_offset:bytes,ret_size:int) -> int:
+    def CALL(self) -> int:
+        #gas:int,address:bytes,value:int,args_offset:bytes,args_size:int,ret_offset:bytes,ret_size:int
         #Message-call into an account
+        gas = self.stack.pop_int()
+        address = self.stack.pop_int()
+        value = self.stack.pop_int()
+        argsOffset = self.stack.pop_int()
+        argsSize = self.stack.pop_int()
+        retOffset = self.stack.pop_int()
+        retSize = self.stack.pop_int()
+        
+        # new_contract = ContractInstance(bytecode_data,ExecutionContext(*execution_context_data.values()),TransactionContext(*transaction_context_data.values()))
+        
+        
+        
         print("UNFINISHED")
         return None
 
@@ -1280,10 +1311,32 @@ class Instructions:
 
     #OPCODE     GAS
     #FA         100 dynamic     
-    def STATICCALL(gas:int,address:bytes,value:int,args_offset:bytes,args_size:int,ret_offset:bytes,ret_size:int) -> int:
+    def STATICCALL(self) -> int:
+       #gas:int,address:bytes,value:int,args_offset:bytes,args_size:int,ret_offset:bytes,ret_size:int
         #Static message-call into an account
-        print("UNFINISHED")
-        return None
+        
+        gas = self.stack.pop_int()
+        address = self.stack.pop_int()
+        argsOffset = self.stack.pop_int()#offset in memory of calldata 
+        argsSize = self.stack.pop_int()#size in memory of calldata 
+        retOffset = self.stack.pop_int()#offset in memory of calldata 
+        retSize = self.stack.pop_int()#size in memory of calldata 
+        
+        
+        calldata = self.memory.load(argsOffset,argsSize)
+        
+        result = self.executor.contract_instance.static_call(gas,address,calldata)
+        # new_contract = ContractInstance(external_code,ExecutionContext(*self.executor.execution_context_data.values()),TransactionContext(*self.executor.transaction_context_data.values()))
+        print("EXTERNAL CODE RESULT")
+        print("")
+        print(result)
+        print("")
+        processed_value = result.to_bytes(retSize, 'big') if type(result) == int else result[:retSize]
+        self.memory.store(retOffset,processed_value)
+        if(result):
+            return self.stack.push_int(1)
+        else:
+            return self.stack.push_int(0)
 
 
     #OPCODE     GAS
@@ -1291,14 +1344,14 @@ class Instructions:
     def REVERT(self):
         #Halt execution reverting state changes but returning data and remaining gas
         self.executor.reverted = True
-        return "Revert"
+        return "REVERT"
 
     #OPCODE     GAS
     #FE         NaN dynamic  
     def INVALID(self) -> int:
         #Designated invalid instruction
-        self.executor.stopped = True
-        return "Stopped"
+        self.executor.invalid = True
+        return "INVALID"
 
     #OPCODE     GAS
     #FF         5000 dynamic   

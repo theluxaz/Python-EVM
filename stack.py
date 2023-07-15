@@ -41,7 +41,7 @@ class Stack:
     def swap(self,offset:int):
         swap_index = (len(self.stack) -1 - offset)
         item_to_top = self.stack[swap_index]
-        item_to_swap = self.pop()
+        item_to_swap = self.stack.pop()
         
         self.stack.append(item_to_top)
         del self.stack[swap_index]

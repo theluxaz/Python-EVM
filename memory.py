@@ -4,18 +4,21 @@ from utils import print_memory
 # 0x52    MSTORE      Save word to memory
 # 0x53    MSTORE8     Save byte to memory
 # 0x59    MSIZE       Get the size of active memory in bytes
+word_length = 32
 
 class Memory:
     bytes_array = bytearray(0)
-
+    
+    def __init__(self) :
+        print("INITIALIZING MEMORY ----------------------------------------------")
+        self.bytes_array = bytearray(0)
 
     def store(self, offset: int, value:bytearray):
-        word_length = 32
 
-        #TODO refactor
-        #expand memory
-        if((offset+word_length) > len(self.bytes_array)):
-             self.bytes_array.extend(bytearray((offset+word_length)-len(self.bytes_array)))
+        length_needed= offset+len(value)+word_length
+        
+        if(length_needed > len(self.bytes_array)):
+            self.expand_memory(length_needed)
              
 
         for index, byte in enumerate(value):
@@ -23,24 +26,35 @@ class Memory:
         print_memory(self.bytes_array)
         return value
 
-    def store8(self, offset: int, value:int) -> None:
-        word_length = 32
-
-        #TODO refactor
-        #expand memory
-        if((offset+word_length) > len(self.bytes_array)):
-            print("extending")
-            self.bytes_array.extend(bytearray((offset+word_length)-len(self.bytes_array)))
-            print(self.bytes_array)
-             
-        self.bytes_array[offset] = value
+    def store8(self, offset: int, value:bytearray) -> None:
+        
+        length_needed= offset+1 
+        if(length_needed > len(self.bytes_array)):
+            self.expand_memory(length_needed)
+        
+        for index, byte in enumerate(value):
+                self.bytes_array[offset + index] = byte
+        # self.bytes_array[offset] = value
         print_memory(self.bytes_array)
         return value
 
-    def load(self, offset: int, size:int) -> bytes:
-        # try memoryview() ??
+    def load(self, offset: int, size: int) -> bytes:
+        length_needed= offset+size
+        if(length_needed > len(self.bytes_array)):
+            self.expand_memory(length_needed)
         result = self.bytes_array[offset : offset + size]
+        print_memory(self.bytes_array)
         return result
+    
+    def expand_memory(self, length_needed:int):
+        # print(f"Length needed is {length_needed} , number to add is {((length_needed)-len(self.bytes_array))}")
+        # print(f"Temp {((word_length- ((length_needed-len(self.bytes_array))))%word_length)}")
+        # print(f"What is left to 32 bits is {(word_length- (((length_needed)-len(self.bytes_array))%word_length))}")
+
+        extend_to_number =((length_needed)-len(self.bytes_array))+((word_length- ((length_needed-len(self.bytes_array))))%word_length)
+        
+        self.bytes_array.extend(bytearray(extend_to_number))
+
 
     def size(self) -> None:
         print(f"Byte array is {len(self.bytes_array)}")
