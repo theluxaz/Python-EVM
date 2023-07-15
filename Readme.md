@@ -98,6 +98,8 @@ Added functionality for both execution and transaction context. Added instructio
 ### Day 6: (July 11)
 Added functionality for ADDRESS and BALANCE. Added logging opcodes such as LOG0. Started refactoring the application to accommodate CREATE instructions.
 
+### Day 7: (July 15)
+Added functionality for testing opcodes from evm-from-scratch-challenge resources https://github.com/w1nt3r-eth/evm-from-scratch. Adjusted Executor to work with multiple contexts. Fixed errors present in certain opcode implementations.
 
 <!-- LICENSE -->
 ## License
