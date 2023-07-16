@@ -1,3 +1,4 @@
+from typing import Optional
 from stack import Stack
 from memory import Memory
 from storage import Storage
@@ -14,10 +15,13 @@ max_ceiling = 2**256
 
 class Instructions:
 
-    def __init__(self,executor:object) -> None:
+    def __init__(self,executor:object,storage:Optional[Storage]) -> None:
         self.stack = Stack()
         self.memory = Memory()
-        self.storage = Storage()
+        if storage:
+            self.storage = storage
+        else:
+            self.storage = Storage()
         self.executor = executor
 
     def get_instruction_function(self,opcode_name:str):
@@ -375,7 +379,7 @@ class Instructions:
     #30         2 
     def ADDRESS(self):
         #gets address of current execution account
-        return self.stack.push_int(self.executor.address)
+        return self.stack.push_bytes(self.executor.address)
 
     #OPCODE     GAS
     #31         100 hot 3200 cold  dynamic  
@@ -383,7 +387,11 @@ class Instructions:
         #Checks the balance of given address
         address = self.stack.pop_int()
         if(address):
-            return self.stack.push_int(self.executor.execution_context.external_contracts[address]["balance"])
+            
+            if(self.executor.execution_context.external_contracts.get(address) and self.executor.execution_context.external_contracts[address].get("balance")):
+                return self.stack.push_int(self.executor.execution_context.external_contracts[address]["balance"])
+            else:
+                return self.stack.push_int(0)
         else:
             return self.stack.push_int(0)
         
@@ -398,7 +406,7 @@ class Instructions:
     #33         2  
     def CALLER(self):
         #Get address of msg.sender
-        return self.stack.push_bytes(self.executor.transaction_context.sender_address)
+        return self.stack.push_bytes(self.executor.transaction_context.caller_address)
 
     #OPCODE     GAS
     #34         2  
@@ -413,13 +421,24 @@ class Instructions:
         #byte offset i, Get input data of calldata
         offset = self.stack.pop_int()
         word_length=32
-        return self.stack.push_bytes(self.executor.transaction_context.data[offset : offset + word_length])
+        length_needed= offset+word_length
+        calldata = self.executor.transaction_context.data
+
+        if(length_needed > len(calldata)):
+            extend_to_number =((length_needed)-len(calldata))+((word_length- ((length_needed-len(calldata))))%word_length)
+            calldata.extend(bytearray(extend_to_number))
+            
+        #DELETES TRAILING ZEROES
+        #TODO remove possibly
+        processed_data = int.from_bytes(calldata[offset : offset + word_length]).to_bytes((int.from_bytes(calldata[offset : offset + word_length]).bit_length() + 7) // 8, byteorder = 'big')
+        return self.stack.push_bytes(processed_data)
 
     #OPCODE     GAS
     #36         2  
     def CALLDATASIZE(self):
         #Get size of input data of calldata
-        return self.stack.push_int(len(self.executor.transaction_context.data))
+        result = len(self.executor.transaction_context.data)
+        return self.stack.push_int(result)
 
 
     #OPCODE     GAS
@@ -461,8 +480,12 @@ class Instructions:
     def EXTCODESIZE(self):
         #Get size of an account’s code
         address = self.stack.pop_int()
+        external_contracts = self.executor.execution_context.external_contracts
         if(address):
-            return self.stack.push_int(len(bytearray.fromhex(self.executor.execution_context.external_contracts[address]["bytecode"])))
+            if(external_contracts.get(address) and external_contracts[address].get("bytecode")):
+                return self.stack.push_int(len(bytearray.fromhex(external_contracts[address]["bytecode"])))
+            else:
+                return self.stack.push_int(0)
         else:
             return self.stack.push_int(0)
         
@@ -475,8 +498,12 @@ class Instructions:
         mem_offset = self.stack.pop_int()
         bytecode_offset = self.stack.pop_int()
         size = self.stack.pop_int()
+        external_contracts = self.executor.execution_context.external_contracts
         if(address):
-            return self.memory.store(mem_offset,bytearray.fromhex(self.executor.execution_context.external_contracts[address]["bytecode"][bytecode_offset : bytecode_offset + size]))
+            if(external_contracts.get(address) and external_contracts[address].get("bytecode")):
+                return self.memory.store(mem_offset,bytearray.fromhex(external_contracts[address]["bytecode"][bytecode_offset : bytecode_offset + size]))
+            else:
+                return self.stack.push_int(0)
         else:
             return self.stack.push_int(0)
 
@@ -485,24 +512,40 @@ class Instructions:
     #3D         2  
     def RETURNDATASIZE(self) -> int:
         #Get size of output data from the previous call from the current environment
-        print("UNFINISHED")
-        return None
-
+        result =self.executor.contract_instance.get_return_data()
+        print(f"Printing return DATA : {result} -----------------------------")
+        if(result):
+            result = len(result)
+            return self.stack.push_int(result)
+        else:
+            return self.stack.push_int(0)
+        
     #OPCODE     GAS
     #3E         3  dynamic
-    def RETURNDATACOPY(self,dest_offset:int, offset:int,size:int):
+    def RETURNDATACOPY(self):
+        #dest_offset:int, offset:int,size:int
         #Copy output data from the previous call to memory
-        print("UNFINISHED")
-        return None
+        mem_offset = self.stack.pop_int()
+        return_data_offset = self.stack.pop_int()
+        data_size = self.stack.pop_int()
+        
+        result =self.executor.contract_instance.get_return_data()[return_data_offset : return_data_offset + data_size]
+        
+        return self.memory.store(mem_offset,result)
 
     #OPCODE     GAS
     #3F         100 dynamic  
     def EXTCODEHASH(self):
         #Get hash of an account’s code
         address = self.stack.pop_int()
+        external_contracts = self.executor.execution_context.external_contracts
         if(address):
-            hashed_value = keccak(bytearray.fromhex(self.executor.execution_context.external_contracts[address]["bytecode"]))
-            return self.stack.push_bytes(hashed_value)
+            if(external_contracts.get(address) and external_contracts[address].get("bytecode")):
+                print(f"To be hashed data {external_contracts[address]['bytecode']}")
+                hashed_value = keccak(bytearray.fromhex(external_contracts[address]["bytecode"]))
+                return self.stack.push_bytes(hashed_value)
+            else:
+                return self.stack.push_int(0)
         else:
             return self.stack.push_int(0)
 
@@ -637,13 +680,19 @@ class Instructions:
         key = self.stack.pop_int()
 
         # processed_key = key.to_bytes(32, 'big')
-
-        return self.stack.push_int(self.storage.load(key))
-
+        result = self.storage.load(key)
+        if(result):
+            return self.stack.push_int(result)
+        else:
+            return self.stack.push_int(0)
     #OPCODE     GAS
     #55         100 dynamic  
     def SSTORE(self):
         #Save word to storage
+        
+        if(self.executor.static):
+            return self.INVALID()
+        
         key = self.stack.pop_int()
         value = self.stack.pop_int()
         #delete later
@@ -1154,11 +1203,15 @@ class Instructions:
     #A0         375 dynamic 
     def LOG0(self):
         #Append log record with no topics
+        
+        if(self.executor.static):
+            return self.INVALID()
+        
         mem_offset = self.stack.pop_int()
         size = self.stack.pop_int()
         
         data = self.memory.load(mem_offset,size)
-        log = {"account":self.executor.address,"topics":None,"data":data}
+        log = {"address":"0x"+self.executor.address.hex(),"data":data.hex(),"topics":[]}
         
         return self.executor.logs.append(log)
 
@@ -1167,13 +1220,16 @@ class Instructions:
     def LOG1(self):
         #Append log record with 1 topic
         
+        if(self.executor.static):
+            return self.INVALID()
+        
         #Append log record with no topics
         mem_offset = self.stack.pop_int()
         size = self.stack.pop_int()
-        topic1 = self.stack.pop_bytes()
+        topic1 = "0x"+self.stack.pop_bytes().hex()
         
         data = self.memory.load(mem_offset,size)
-        log = {"account":self.executor.address,"topics":[topic1],"data":data}
+        log = {"address":"0x"+self.executor.address.hex(),"data":data.hex(),"topics":[topic1]}
         
         return self.executor.logs.append(log)
 
@@ -1181,13 +1237,17 @@ class Instructions:
     #A2         1125 dynamic   
     def LOG2(self):
         #Append log record with 2 topic
+        
+        if(self.executor.static):
+            return self.INVALID()
+        
         mem_offset = self.stack.pop_int()
         size = self.stack.pop_int()
-        topic1 = self.stack.pop_bytes()
-        topic2 = self.stack.pop_bytes()
+        topic1 = "0x"+self.stack.pop_bytes().hex()
+        topic2 = "0x"+self.stack.pop_bytes().hex()
         
         data = self.memory.load(mem_offset,size)
-        log = {"account":self.executor.address,"topics":[topic1,topic2],"data":data}
+        log = {"address":"0x"+self.executor.address.hex(),"data":data.hex(),"topics":[topic1,topic2]}
         
         return self.executor.logs.append(log)
 
@@ -1195,14 +1255,18 @@ class Instructions:
     #A3         1500 dynamic   
     def LOG3(self):
         #Append log record with 3 topic
+        
+        if(self.executor.static):
+            return self.INVALID()
+        
         mem_offset = self.stack.pop_int()
         size = self.stack.pop_int()
-        topic1 = self.stack.pop_bytes()
-        topic2 = self.stack.pop_bytes()
-        topic3 = self.stack.pop_bytes()
+        topic1 = "0x"+self.stack.pop_bytes().hex()
+        topic2 = "0x"+self.stack.pop_bytes().hex()
+        topic3 = "0x"+self.stack.pop_bytes().hex()
         
         data = self.memory.load(mem_offset,size)
-        log = {"account":self.executor.address,"topics":[topic1,topic2,topic3],"data":data}
+        log = {"address":"0x"+self.executor.address.hex(),"data":data.hex(),"topics":[topic1,topic2,topic3]}
         
         return self.executor.logs.append(log)
 
@@ -1210,15 +1274,19 @@ class Instructions:
     #A4         1875 dynamic   
     def LOG4(self):
         #Append log record with 4 topic
+        
+        if(self.executor.static):
+            return self.INVALID()
+        
         mem_offset = self.stack.pop_int()
         size = self.stack.pop_int()
-        topic1 = self.stack.pop_bytes()
-        topic2 = self.stack.pop_bytes()
-        topic3 = self.stack.pop_bytes()
-        topic4 = self.stack.pop_bytes()
+        topic1 = "0x"+self.stack.pop_bytes().hex()
+        topic2 = "0x"+self.stack.pop_bytes().hex()
+        topic3 = "0x"+self.stack.pop_bytes().hex()
+        topic4 = "0x"+self.stack.pop_bytes().hex()
         
         data = self.memory.load(mem_offset,size)
-        log = {"account":self.executor.address,"topics":[topic1,topic2,topic3,topic4],"data":data}
+        log = {"address":"0x"+self.executor.address.hex(),"data":data.hex(),"topics":[topic1,topic2,topic3,topic4]}
         
         return self.executor.logs.append(log)
 
@@ -1234,6 +1302,11 @@ class Instructions:
     #F0         32000 dynamic   
     def CREATE(self) -> bytes:
         #Create a new account with associated code
+        
+        #ONLY ALLOWED IN NON STATIC CONTEXT
+        if(self.executor.static):
+            return self.INVALID()
+        
         value = self.stack.pop_int()
         mem_offset = self.stack.pop_int()
         size = self.stack.pop_int()
@@ -1262,6 +1335,7 @@ class Instructions:
     def CALL(self) -> int:
         #gas:int,address:bytes,value:int,args_offset:bytes,args_size:int,ret_offset:bytes,ret_size:int
         #Message-call into an account
+                
         gas = self.stack.pop_int()
         address = self.stack.pop_int()
         value = self.stack.pop_int()
@@ -1270,23 +1344,68 @@ class Instructions:
         retOffset = self.stack.pop_int()
         retSize = self.stack.pop_int()
         
+        #ONLY ALLOWED IN NON STATIC CONTEXT
+        if(self.executor.static and value > 0):
+            return self.INVALID()
+        
         # new_contract = ContractInstance(bytecode_data,ExecutionContext(*execution_context_data.values()),TransactionContext(*transaction_context_data.values()))
         
-        
-        
-        print("UNFINISHED")
-        return None
+        calldata = self.memory.load(argsOffset,argsSize)
+        print(f"Calldata is {calldata}")
+        (result,success) = self.executor.contract_instance.call(gas,address,value,calldata.hex())
+        print("EXTERNAL CODE RESULT")
+        print("\V/")
+        print(result)
+        print(success)
+        print("")
+        if(result):
+            processed_value = result.to_bytes(retSize, 'big') if type(result) == int else result[:retSize]
+            self.memory.store(retOffset,processed_value)
+            if(success):
+                return self.stack.push_int(1)
+            else:
+                return self.stack.push_int(0)
+        else:
+            return self.stack.push_int(0)
+
 
     #OPCODE     GAS
     #F2         100 dynamic     
-    def CALLCODE(gas:int,address:bytes,value:int,args_offset:bytes,args_size:int,ret_offset:bytes,ret_size:int) -> bytes:
-        #Message-call into this account with alternative account’s code
-        print("UNFINISHED")
-        return None
+    def CALLCODE(self):
+        #gas:int,address:bytes,value:int,args_offset:bytes,args_size:int,ret_offset:bytes,ret_size:int
+        #Almost same as delegate call
+        #Message-call into this account with an alternative account’s code, but changing value, storage stays
+        gas = self.stack.pop_int()
+        address = self.stack.pop_int()
+        value = self.stack.pop_int()
+        argsOffset = self.stack.pop_int()
+        argsSize = self.stack.pop_int()
+        retOffset = self.stack.pop_int()
+        retSize = self.stack.pop_int()
+        
+        calldata = self.memory.load(argsOffset,argsSize)
+        print(f"Calldata is {calldata}")
+        
+        (result,success) = self.executor.contract_instance.call_code(gas,address,value,calldata.hex(),self.storage)
+        print("EXTERNAL CALLCODE RESULT")
+        print("\V/")
+        print(result)
+        print(success)
+        print("")
+        
+        if(result):
+            processed_value = result.to_bytes(retSize, 'big') if type(result) == int else result[:retSize]
+            self.memory.store(retOffset,processed_value)
+            if(success):
+                return self.stack.push_int(1)
+            else:
+                return self.stack.push_int(0)
+        else:
+            return self.stack.push_int(0)
 
     #OPCODE     GAS
     #F3         0 dynamic     
-    def RETURN(self) -> bytes:
+    def RETURN(self):
         #Halt execution returning output data
         mem_offset = self.stack.pop_int()
         size = self.stack.pop_int()
@@ -1297,15 +1416,44 @@ class Instructions:
 
     #OPCODE     GAS
     #F4         100 dynamic     
-    def DELEGATECALL(gas:int,address:bytes,value:int,args_offset:bytes,args_size:int,ret_offset:bytes,ret_size:int) -> int:
-        #Message-call into this account with an alternative account’s code, but persisting the current values for sender and value
-        print("UNFINISHED")
-        return None
+    def DELEGATECALL(self):
+        #gas:int,address:bytes,args_offset:bytes,args_size:int,ret_offset:bytes,ret_size:int
+        #Message-call into this account with an alternative account’s code, but persisting the current values for sender and value, storage stays
+        gas = self.stack.pop_int()
+        address = self.stack.pop_int()
+        argsOffset = self.stack.pop_int()
+        argsSize = self.stack.pop_int()
+        retOffset = self.stack.pop_int()
+        retSize = self.stack.pop_int()
+        
+        calldata = self.memory.load(argsOffset,argsSize)
+        print(f"Calldata is {calldata}")
+        
+        (result,success) = self.executor.contract_instance.delegate_call(gas,address,calldata.hex(),self.storage)
+        print("EXTERNAL DELEGATE CODE RESULT")
+        print("\V/")
+        print(result)
+        print(success)
+        print("")
+        
+        if(result):
+            processed_value = result.to_bytes(retSize, 'big') if type(result) == int else result[:retSize]
+            self.memory.store(retOffset,processed_value)
+            if(success):
+                return self.stack.push_int(1)
+            else:
+                return self.stack.push_int(0)
+        else:
+            return self.stack.push_int(0)
 
     #OPCODE     GAS
     #F5         32000 dynamic     
     def CREATE2(value:int,offset:bytes,size:int,salt:bytes) -> bytes:
         #Create a new account with associated code at a predictable address
+        
+        if(self.executor.static):
+            return self.INVALID()
+        
         print("UNFINISHED")
         return None
 
@@ -1322,19 +1470,23 @@ class Instructions:
         retOffset = self.stack.pop_int()#offset in memory of calldata 
         retSize = self.stack.pop_int()#size in memory of calldata 
         
-        
+                
         calldata = self.memory.load(argsOffset,argsSize)
+        print(f"Calldata is {calldata}")
         
-        result = self.executor.contract_instance.static_call(gas,address,calldata)
-        # new_contract = ContractInstance(external_code,ExecutionContext(*self.executor.execution_context_data.values()),TransactionContext(*self.executor.transaction_context_data.values()))
+        (result,success) = self.executor.contract_instance.static_call(gas,address,calldata.hex())
         print("EXTERNAL CODE RESULT")
-        print("")
+        print("\V/")
         print(result)
+        print(success)
         print("")
-        processed_value = result.to_bytes(retSize, 'big') if type(result) == int else result[:retSize]
-        self.memory.store(retOffset,processed_value)
         if(result):
-            return self.stack.push_int(1)
+            processed_value = result.to_bytes(retSize, 'big') if type(result) == int else result[:retSize]
+            self.memory.store(retOffset,processed_value)
+            if(success):
+                return self.stack.push_int(1)
+            else:
+                return self.stack.push_int(0)
         else:
             return self.stack.push_int(0)
 
@@ -1343,12 +1495,16 @@ class Instructions:
     #FD         0 dynamic   
     def REVERT(self):
         #Halt execution reverting state changes but returning data and remaining gas
+        mem_offset = self.stack.pop_int()
+        size = self.stack.pop_int()
+        data = self.memory.load(mem_offset,size)
+        
         self.executor.reverted = True
-        return "REVERT"
+        return data
 
     #OPCODE     GAS
     #FE         NaN dynamic  
-    def INVALID(self) -> int:
+    def INVALID(self):
         #Designated invalid instruction
         self.executor.invalid = True
         return "INVALID"
@@ -1357,6 +1513,10 @@ class Instructions:
     #FF         5000 dynamic   
     def SELFDESTRUCT(address:bytes):
         #Halt execution and register account for later deletion
+        
+        if(self.executor.static):
+            return self.INVALID()
+        
         print("UNFINISHED")
         return None 
         

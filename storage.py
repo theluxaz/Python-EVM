@@ -17,7 +17,7 @@ class Storage:
         return value
 
     def load(self, key: int) -> bytes:
-        result = self.storage[key]
+        result = self.storage.get(key)
         print(f"Storage: {self.storage}")
         print(f"Retrieved value: {result}")
         return result

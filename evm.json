@@ -432,7 +432,7 @@
         "success": true
       }
     },
-    {
+        {
       "name": "SDIV",
       "hint": "Read \"Negative Numbers\" section of the course learning materials. SDIV works like DIV for \"positive\" numbers",
       "code": {
@@ -1191,20 +1191,6 @@
       }
     },
     {
-      "name": "GAS",
-      "hint": "In this version of the tests, GAS is not supported yet and is always expected to return MAX_UINT256",
-      "code": {
-        "asm": "GAS",
-        "bin": "5a"
-      },
-      "expect": {
-        "stack": [
-          "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-        ],
-        "success": true
-      }
-    },
-    {
       "name": "JUMP",
       "hint": "Set the Program Counter (PC) to the top value from the stack",
       "code": {
@@ -1420,7 +1406,7 @@
       "name": "ORIGIN",
       "hint": "Solidity calls this tx.origin",
       "tx": {
-        "origin": "0x1337"
+        "origin": "0x1000000000000000000000000000000000001337"
       },
       "code": {
         "asm": "ORIGIN",
@@ -1428,7 +1414,7 @@
       },
       "expect": {
         "stack": [
-          "0x1337"
+          "0x1000000000000000000000000000000000001337"
         ],
         "success": true
       }
@@ -1471,7 +1457,7 @@
       "name": "COINBASE",
       "hint": "Do not hardcode these numbers, pull them from the test cases",
       "block": {
-        "coinbase": "0x777"
+        "coinbase": "0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5"
       },
       "code": {
         "asm": "COINBASE",
@@ -1479,24 +1465,7 @@
       },
       "expect": {
         "stack": [
-          "0x777"
-        ],
-        "success": true
-      }
-    },
-    {
-      "name": "COINBASE (different one)",
-      "hint": "Do not hardcode these numbers, pull them from the test cases",
-      "block": {
-        "coinbase": "0x888"
-      },
-      "code": {
-        "asm": "COINBASE",
-        "bin": "41"
-      },
-      "expect": {
-        "stack": [
-          "0x888"
+          "0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5"
         ],
         "success": true
       }
@@ -1586,20 +1555,7 @@
       },
       "hint": ""
     },
-    {
-      "name": "BLOCKHASH",
-      "hint": "Not used in this test suite, can return 0",
-      "code": {
-        "asm": "PUSH1 0\nBLOCKHASH",
-        "bin": "600040"
-      },
-      "expect": {
-        "stack": [
-          "0x0"
-        ],
-        "success": true
-      }
-    },
+
     {
       "name": "BALANCE",
       "hint": "Read \"State\" section of the course learning materials. Modify your evm function to take state as one of the arguments, or turn it into a class",
@@ -1867,7 +1823,7 @@
       "name": "EXTCODEHASH",
       "hint": "Use the same library you used for SHA3 opcode",
       "state": {
-        "0x1000000000000000000000000000000000000aaa": {
+        "0x1000000000000000000000000000000000000aab": {
           "code": {
             "asm": null,
             "bin": "FFFFFFFF"
@@ -1875,8 +1831,8 @@
         }
       },
       "code": {
-        "asm": "PUSH20 0x1000000000000000000000000000000000000aaa\nEXTCODEHASH",
-        "bin": "731000000000000000000000000000000000000aaa3f"
+        "asm": "PUSH20 0x1000000000000000000000000000000000000aab\nEXTCODEHASH",
+        "bin": "731000000000000000000000000000000000000aab3f"
       },
       "expect": {
         "stack": [
@@ -1888,8 +1844,8 @@
     {
       "name": "EXTCODEHASH (empty)",
       "code": {
-        "asm": "PUSH20 0x1000000000000000000000000000000000000aaa\nEXTCODEHASH",
-        "bin": "731000000000000000000000000000000000000aaa3f"
+        "asm": "PUSH20 0x1000000000000000000000000000000000000aac\nEXTCODEHASH",
+        "bin": "731000000000000000000000000000000000000aac3f"
       },
       "expect": {
         "stack": [
@@ -1967,7 +1923,7 @@
       "name": "LOG0",
       "hint": "Make evm function return array of logs, modify the testing code to assert that the logs match",
       "tx": {
-        "to": "0x1000000000000000000000000000000000000001"
+        "to": "0x1000000000000000000000000000000000000aaa"
       },
       "code": {
         "asm": "PUSH1 0xaa\nPUSH1 0\nMSTORE\nPUSH1 1\nPUSH1 31\nLOG0",
@@ -1976,7 +1932,7 @@
       "expect": {
         "logs": [
           {
-            "address": "0x1000000000000000000000000000000000000001",
+            "address": "0x1000000000000000000000000000000000000aaa",
             "data": "aa",
             "topics": []
           }
@@ -1988,7 +1944,7 @@
       "name": "LOG1",
       "hint": "Make evm function return array of logs, modify the testing code to assert that the logs match",
       "tx": {
-        "to": "0x1000000000000000000000000000000000000001"
+        "to": "0x1000000000000000000000000000000000000aaa"
       },
       "code": {
         "asm": "PUSH1 0xbb\nPUSH1 0\nMSTORE\nPUSH32 0x1111111111111111111111111111111111111111111111111111111111111111\nPUSH1 1\nPUSH1 31\nLOG1",
@@ -1997,7 +1953,7 @@
       "expect": {
         "logs": [
           {
-            "address": "0x1000000000000000000000000000000000000001",
+            "address": "0x1000000000000000000000000000000000000aaa",
             "data": "bb",
             "topics": [
               "0x1111111111111111111111111111111111111111111111111111111111111111"
@@ -2011,7 +1967,7 @@
       "name": "LOG2",
       "hint": "Use the same code to handle LOG1...LOG4 opcodes",
       "tx": {
-        "to": "0x1000000000000000000000000000000000000001"
+        "to": "0x1000000000000000000000000000000000000aaa"
       },
       "code": {
         "asm": "PUSH1 0xcc\nPUSH1 0\nMSTORE\nPUSH32 0x1111111111111111111111111111111111111111111111111111111111111111\nPUSH32 0x2222222222222222222222222222222222222222222222222222222222222222\nPUSH1 1\nPUSH1 31\nLOG2",
@@ -2020,7 +1976,7 @@
       "expect": {
         "logs": [
           {
-            "address": "0x1000000000000000000000000000000000000001",
+            "address": "0x1000000000000000000000000000000000000aaa",
             "data": "cc",
             "topics": [
               "0x2222222222222222222222222222222222222222222222222222222222222222",
@@ -2035,7 +1991,7 @@
       "name": "LOG3",
       "hint": "N = OPCODE - LOG0, pop N items from the stack as topics",
       "tx": {
-        "to": "0x1000000000000000000000000000000000000001"
+        "to": "0x1000000000000000000000000000000000000aaa"
       },
       "code": {
         "asm": "PUSH1 0xdd\nPUSH1 0\nMSTORE\nPUSH32 0x1111111111111111111111111111111111111111111111111111111111111111\nPUSH32 0x2222222222222222222222222222222222222222222222222222222222222222\nPUSH32 0x3333333333333333333333333333333333333333333333333333333333333333\nPUSH1 1\nPUSH1 31\nLOG3",
@@ -2044,7 +2000,7 @@
       "expect": {
         "logs": [
           {
-            "address": "0x1000000000000000000000000000000000000001",
+            "address": "0x1000000000000000000000000000000000000aaa",
             "data": "dd",
             "topics": [
               "0x3333333333333333333333333333333333333333333333333333333333333333",
@@ -2060,7 +2016,7 @@
       "name": "LOG4",
       "hint": "Refactoring code is always a good idea. Your code will become cleaner, and the tests will catch if something breaks",
       "tx": {
-        "to": "0x1000000000000000000000000000000000000001"
+        "to": "0x1000000000000000000000000000000000000aaa"
       },
       "code": {
         "asm": "PUSH1 0xee\nPUSH1 0\nMSTORE\nPUSH32 0x1111111111111111111111111111111111111111111111111111111111111111\nPUSH32 0x2222222222222222222222222222222222222222222222222222222222222222\nPUSH32 0x3333333333333333333333333333333333333333333333333333333333333333\nPUSH32 0x4444444444444444444444444444444444444444444444444444444444444444\nPUSH1 1\nPUSH1 31\nLOG4",
@@ -2069,7 +2025,7 @@
       "expect": {
         "logs": [
           {
-            "address": "0x1000000000000000000000000000000000000001",
+            "address": "0x1000000000000000000000000000000000000aaa",
             "data": "ee",
             "topics": [
               "0x4444444444444444444444444444444444444444444444444444444444444444",
@@ -2118,8 +2074,8 @@
         }
       },
       "code": {
-        "asm": "PUSH1 1\nPUSH1 31\nPUSH1 0\nPUSH1 0\nPUSH1 0\nPUSH20 0x1000000000000000000000000000000000000c42\nPUSH1 0\nCALL\nPUSH1 0\nMLOAD",
-        "bin": "6001601f600060006000731000000000000000000000000000000000000c426000f1600051"
+        "asm": "PUSH1 1\nPUSH1 31\nPUSH1 0\nPUSH1 0\nPUSH1 0\nPUSH20 0x1000000000000000000000000000000000000c42\nPUSH2 2222\nCALL\nPUSH1 0\nMLOAD",
+        "bin": "6001601f600060006000731000000000000000000000000000000000000c42612222f1600051"
       },
       "expect": {
         "stack": [
@@ -2136,7 +2092,7 @@
         "to": "0x1000000000000000000000000000000000000aaa"
       },
       "state": {
-        "0x1000000000000000000000000000000000000c42": {
+        "0x1000000000000000000000000000000000000c43": {
           "code": {
             "asm": "CALLER\nPUSH1 0\nMSTORE\nPUSH1 32\nPUSH1 0\nRETURN",
             "bin": "3360005260206000f3"
@@ -2144,8 +2100,8 @@
         }
       },
       "code": {
-        "asm": "PUSH1 32\nPUSH1 0\nPUSH1 0\nPUSH1 0\nPUSH1 0\nPUSH20 0x1000000000000000000000000000000000000c42\nPUSH1 0\nCALL\nPUSH1 0\nMLOAD",
-        "bin": "60206000600060006000731000000000000000000000000000000000000c426000f1600051"
+        "asm": "PUSH1 32\nPUSH1 0\nPUSH1 0\nPUSH1 0\nPUSH1 0\nPUSH20 0x1000000000000000000000000000000000000c43\nPUSH1 0\nCALL\nPUSH1 0\nMLOAD",
+        "bin": "60206000600060006000731000000000000000000000000000000000000c43612222f1600051"
       },
       "expect": {
         "stack": [
@@ -2159,7 +2115,7 @@
       "name": "CALL (reverts)",
       "hint": "Reverts can also return data",
       "state": {
-        "0x1000000000000000000000000000000000000c42": {
+        "0x1000000000000000000000000000000000000c44": {
           "code": {
             "asm": "PUSH1 0x42\nPUSH1 0\nMSTORE\nPUSH1 1\nPUSH1 31\nREVERT",
             "bin": "60426000526001601ffd"
@@ -2167,8 +2123,8 @@
         }
       },
       "code": {
-        "asm": "PUSH1 1\nPUSH1 31\nPUSH1 0\nPUSH1 0\nPUSH1 0\nPUSH20 0x1000000000000000000000000000000000000c42\nPUSH1 0\nCALL\nPUSH1 0\nMLOAD",
-        "bin": "6001601f600060006000731000000000000000000000000000000000000c426000f1600051"
+        "asm": "PUSH1 1\nPUSH1 31\nPUSH1 0\nPUSH1 0\nPUSH1 0\nPUSH20 0x1000000000000000000000000000000000000c44\nPUSH1 0\nCALL\nPUSH1 0\nMLOAD",
+        "bin": "6001601f600060006000731000000000000000000000000000000000000c446000f1600051"
       },
       "expect": {
         "stack": [
@@ -2289,7 +2245,7 @@
       "name": "STATICCALL (reverts on write)",
       "hint": "Use a flag to tell the evm function whenever the context is writeable (CALL) or not (STATICCALL)",
       "state": {
-        "0x1000000000000000000000000000000000000c42": {
+        "0x1000000000000000000000000000000000000c4d": {
           "code": {
             "asm": "PUSH1 0x42\nPUSH1 0\nSSTORE",
             "bin": "6042600055"
@@ -2297,8 +2253,8 @@
         }
       },
       "code": {
-        "asm": "PUSH1 1\nPUSH1 31\nPUSH1 0\nPUSH1 0\nPUSH20 0x1000000000000000000000000000000000000c42\nPUSH1 0\nSTATICCALL",
-        "bin": "6001601f60006000731000000000000000000000000000000000000c426000fa"
+        "asm": "PUSH1 1\nPUSH1 31\nPUSH1 0\nPUSH1 0\nPUSH20 0x1000000000000000000000000000000000000c4d\nPUSH1 0\nSTATICCALL",
+        "bin": "6001601f60006000731000000000000000000000000000000000000c4d6000fa"
       },
       "expect": {
         "stack": [

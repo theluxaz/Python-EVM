@@ -1,23 +1,27 @@
+from typing import Optional
 from stack import Stack
 from memory import Memory
 from instructions import Instructions
 from execution_context import ExecutionContext
 from transaction_context import TransactionContext
 from opcode_list import opcodes_list
+from storage import Storage
 
 class Executor:
 
-    def __init__(self,contract_instance, bytecode:bytearray,execution_context:ExecutionContext,transaction_context:TransactionContext) -> None:
+    def __init__(self,contract_instance, bytecode:bytearray,execution_context:ExecutionContext,transaction_context:TransactionContext,storage:Optional[Storage] = None,static:Optional[bool] = False) -> None:
         self.contract_instance = contract_instance
-        self.instructions = Instructions(self)
+        self.instructions = Instructions(self,storage)
         self.bytecode = bytecode
         self.execution_context=execution_context
         self.transaction_context=transaction_context
-        self.address = execution_context.self_address
+        self.address = transaction_context.to_address
         self.gas_remaining = transaction_context.gas
         self.gas_starting = transaction_context.gas
+        self.return_data = None
         self.logs = []
         self.pc = 0
+        self.static = static
         self.stopped = False
         self.reverted = False
         self.returned = False
@@ -32,36 +36,39 @@ class Executor:
             if (self.pc > len(self.bytecode)):
                 print("STOPPING RUNTIME - CODE FINISHED")
                 print()
-                self.stopped == True
-                return "STOPPED"
+                self.stopped = True
+                return "CODE FINISHED"
             # elif (instruction["name"]== "STOP"):
             #     print("STOPPING RUNTIME - STOP COMMAND")
             #     print()
-            #     self.stopped == True
+            #     self.stopped = True
             #     return "Stopped"
-            #TODO ADD PROPER GAS ERRORS
-            elif (self.gas_remaining < 0):
-                print("STOPPING RUNTIME - OUT OF GAS")
-                print()
-                self.stopped == True
-                return "STOPPED"
+            #TODO ADD PROPER GAS ERRORS - ENABLE LATER AFTER TESTING
+            # elif (self.gas_remaining < 0):
+            #     print("STOPPING RUNTIME - OUT OF GAS")
+            #     print()
+            #     self.stopped = True
+            #     return "STOPPED"
             print(f"Opcode Instruction  is : {instruction}")
 
             processing_function = self.instructions.get_instruction_function(instruction["name"])
             result = processing_function()
 
             self.instructions.stack.print()
+
             
-            if(self.returned):
+            if(self.returned or self.reverted):
                 return result
-            elif(self.reverted):
-                #TODO IMPLEMENT REVERT FUNCTIONALITY
-                return "REVERT"
+            # elif(self.reverted):
+            #     #TODO IMPLEMENT REVERT FUNCTIONALITY
+            #     return "REVERT"
             elif(self.stopped):
                 #TODO IMPLEMENT STOPPED FUNCTIONALITY
+                print("INVALID VALUE STOPPED PROGRAM")
                 return "STOPPED"
             elif(self.invalid):
                 #TODO IMPLEMENT INVALID FUNCTIONALITY
+                print("INVALID VALUE STOPPED PROGRAM")
                 return "INVALID"
             
             print(result)
@@ -80,6 +87,61 @@ class Executor:
             instruction = self.get_next_opcode()
             self.gas_remaining = self.gas_remaining - instruction["gas"]
             if (self.pc > len(self.bytecode)):
+                print("CODE FINISHED - STOPPING")
+                print()
+                self.stopped = True
+                return False
+            # elif (instruction["name"]== "STOP"):
+            #     print("STOPPING RUNTIME - STOP COMMAND")
+            #     print()
+            #     self.stopped = True
+            #     return "STOPPED"
+            #TODO ADD PROPER GAS ERRORS - ENABLE LATER AFTER TESTING
+            # elif (self.gas_remaining < 0):
+            #     print("STOPPING RUNTIME - OUT OF GAS")
+            #     print()
+            #     self.stopped = True
+            #     return "STOPPED"
+            print(f"Opcode Instruction  is : {instruction}")
+
+            processing_function = self.instructions.get_instruction_function(instruction["name"])
+            result = processing_function()
+
+            self.instructions.stack.print()
+            
+            if(self.returned or self.reverted):
+                return result
+            # elif(self.reverted):
+            #     #TODO IMPLEMENT REVERT FUNCTIONALITY
+            #     return "REVERT"
+            elif(self.stopped):
+                #TODO IMPLEMENT STOPPED FUNCTIONALITY
+                print("STOPPED PROGRAM")
+                return False
+            elif(self.invalid):
+                #TODO IMPLEMENT INVALID FUNCTIONALITY
+                print("INVALID VALUE STOPPED PROGRAM")
+                return False
+            
+            print(result)
+            if(result):
+                if(type(result) == int):
+                    print(f"Processing result is : int {result}")
+                else:
+                    print(f"Processing result is : bytes {result.hex()}")
+            print(f"Gas remaining: {self.gas_remaining} / {self.gas_starting}")
+            print("--")  
+            
+    #delegate call processing loop
+    def run_delegate_call(self,bytecode_provided):
+        print("STARTING DELEGATE CALL SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        bytecode=bytecode_provided
+        self.pc = 0
+        while not self.stopped and not self.reverted and not self.returned:
+            print("") 
+            instruction = self.get_next_opcode()
+            self.gas_remaining = self.gas_remaining - instruction["gas"]
+            if (self.pc > len(bytecode)):
                 print("STOPPING RUNTIME - CODE FINISHED")
                 print()
                 self.stopped == True
@@ -89,12 +151,12 @@ class Executor:
             #     print()
             #     self.stopped == True
             #     return "STOPPED"
-            #TODO ADD PROPER GAS ERRORS
-            elif (self.gas_remaining < 0):
-                print("STOPPING RUNTIME - OUT OF GAS")
-                print()
-                self.stopped == True
-                return "STOPPED"
+            #TODO ADD PROPER GAS ERRORS - ENABLE LATER AFTER TESTING
+            # elif (self.gas_remaining < 0):
+            #     print("STOPPING RUNTIME - OUT OF GAS")
+            #     print()
+            #     self.stopped == True
+            #     return "STOPPED"
             print(f"Opcode Instruction  is : {instruction}")
 
             processing_function = self.instructions.get_instruction_function(instruction["name"])
@@ -102,11 +164,11 @@ class Executor:
 
             self.instructions.stack.print()
             
-            if(self.returned):
+            if(self.returned or self.reverted):
                 return result
-            elif(self.reverted):
-                #TODO IMPLEMENT REVERT FUNCTIONALITY
-                return "REVERT"
+            # elif(self.reverted):
+            #     #TODO IMPLEMENT REVERT FUNCTIONALITY
+            #     return "REVERT"
             elif(self.stopped):
                 #TODO IMPLEMENT STOPPED FUNCTIONALITY
                 print("stop actuator")
@@ -123,6 +185,7 @@ class Executor:
                     print(f"Processing result is : bytes {result.hex()}")
             print(f"Gas remaining: {self.gas_remaining} / {self.gas_starting}")
             print("--")  
+            print("ENDING DELEGATE CALL SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
     def process_bytecode(self, next_word) -> bytes:
         item = self.bytecode[self.pc : self.pc + next_word]
@@ -149,7 +212,7 @@ class Executor:
     
     def print_logs(self):
         for log in self.logs:
-            print(f"Log: account={log['account']}   topics={get_bytearray_list_to_string(log['topics'])}   data={log['data'].hex()}")
+            print(f"Log: address={log['address']}   topics={get_bytearray_list_to_string(log['topics'])}   data={log['data']}")
     
     #Chekcs if the jump destination is a value used by push and not opcode instruction
     def is_opcode_valid(self,jump_target_position):
@@ -167,10 +230,11 @@ class Executor:
                 
 def get_bytearray_list_to_string(data_array):
     result = ""
-    for item in data_array:
-        if(len(result) >1):
-            result += ", "
-        result += item.hex()
+    if(data_array):
+        for item in data_array:
+            if(len(result) >1):
+                result += ", "
+            result += item
     return result
     
 
