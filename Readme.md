@@ -67,7 +67,7 @@ To do later.
 - [x] Stop and Arithmetic Operations
 - [x] Comparison & Bitwise Logic Operations
 - [x] SHA3
-- [ ] Environmental Information
+- [x] Environmental Information
 - [x] Block Information
 - [x] Stack, Memory, Storage and Flow Operations
 - [x] Push Operations
@@ -101,6 +101,12 @@ Added functionality for ADDRESS and BALANCE. Added logging opcodes such as LOG0.
 
 ### Day 7: (July 15)
 Added functionality for testing opcodes from evm-from-scratch-challenge resources https://github.com/w1nt3r-eth/evm-from-scratch. Adjusted Executor to work with multiple contexts. Fixed errors present in certain opcode implementations.
+
+
+### Day 8: (July 16)
+Added many more opcodes which needed major refactoring, such as CALL, DELEGATECALL, RETURNDATACOPY etc. Reworked context nesting and reverting. Tested and fixed most implemented opcodes.
+
+
 
 <!-- LICENSE -->
 ## License
