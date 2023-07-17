@@ -4,7 +4,7 @@ from memory import Memory
 from storage import Storage
 from utils import signed_to_unsigned,unsigned_to_signed
 from eth_hash.auto import keccak
-# import rlp
+
 # from execution_context import ExecutionContext
 # from transaction_context import TransactionContext
 # from external_contract import ExternalContract
@@ -499,6 +499,9 @@ class Instructions:
         bytecode_offset = self.stack.pop_int()
         size = self.stack.pop_int()
         external_contracts = self.executor.execution_context.external_contracts
+        # print(f"external code data 2 is {external_contracts.items()}")
+        # print(f"external code LEN 2 is {len(external_contracts.items())}")
+        # print(f"external code data 2 is {external_contracts[address]}")
         if(address):
             if(external_contracts.get(address) and external_contracts[address].get("bytecode")):
                 return self.memory.store(mem_offset,bytearray.fromhex(external_contracts[address]["bytecode"][bytecode_offset : bytecode_offset + size]))
@@ -1313,22 +1316,19 @@ class Instructions:
         
         bytecode_data = self.memory.load(mem_offset,size)
         
-        sender = self.executor.transaction_context.sender_address
-        nonce = self.executor.transaction_context.sender_nonce
-        
-        # new_address = keccak(rlp.encode([sender, nonce]))[12:]
-        new_address = None #replace later
-        
-        # new_contract = ContractInstance(bytecode_data,ExecutionContext(*execution_context_data.values()),TransactionContext(*transaction_context_data.values()))
-        # result = target_contract.run()
-
-        # trimmed_value = value[-20:]   #alternative
-        # padded_value = trimmed_value.rjust(20, b'\x00')   #alternative
-        
-        if(new_address):
-            return self.stack.push_int(new_address)
+        print(f"bytecode_data is {bytecode_data}")
+        (result,success) = self.executor.contract_instance.create(value,bytecode_data)
+        print("EXTERNAL CODE RESULT")
+        print("\V/")
+        print(result)
+        print(success)
+        print("")
+        if(result and success):
+            return self.stack.push_bytes(result)
         else:
             return self.stack.push_int(0)
+
+
 
     #OPCODE     GAS
     #F1         100 dynamic   
@@ -1347,9 +1347,7 @@ class Instructions:
         #ONLY ALLOWED IN NON STATIC CONTEXT
         if(self.executor.static and value > 0):
             return self.INVALID()
-        
-        # new_contract = ContractInstance(bytecode_data,ExecutionContext(*execution_context_data.values()),TransactionContext(*transaction_context_data.values()))
-        
+                
         calldata = self.memory.load(argsOffset,argsSize)
         print(f"Calldata is {calldata}")
         (result,success) = self.executor.contract_instance.call(gas,address,value,calldata.hex())
@@ -1444,18 +1442,39 @@ class Instructions:
             else:
                 return self.stack.push_int(0)
         else:
-            return self.stack.push_int(0)
+            if(success):
+                return self.stack.push_int(1)
+            else:
+                return self.stack.push_int(0)
 
     #OPCODE     GAS
     #F5         32000 dynamic     
-    def CREATE2(value:int,offset:bytes,size:int,salt:bytes) -> bytes:
+    def CREATE2(self) -> bytes:
+        #value:int,offset:bytes,size:int,salt:bytes
         #Create a new account with associated code at a predictable address
         
+        #ONLY ALLOWED IN NON STATIC CONTEXT
         if(self.executor.static):
             return self.INVALID()
         
-        print("UNFINISHED")
-        return None
+        value = self.stack.pop_int()
+        mem_offset = self.stack.pop_int()
+        size = self.stack.pop_int()
+        salt = self.stack.pop_bytes()
+        
+        bytecode_data = self.memory.load(mem_offset,size)
+        
+        print(f"bytecode_data is {bytecode_data}")
+        (result,success) = self.executor.contract_instance.create2(value,bytecode_data,salt)
+        print("EXTERNAL CODE RESULT")
+        print("\V/")
+        print(result)
+        print(success)
+        print("")
+        if(result and success):
+            return self.stack.push_bytes(result)
+        else:
+            return self.stack.push_int(0)
 
     #OPCODE     GAS
     #FA         100 dynamic     
@@ -1511,12 +1530,27 @@ class Instructions:
 
     #OPCODE     GAS
     #FF         5000 dynamic   
-    def SELFDESTRUCT(address:bytes):
+    def SELFDESTRUCT(self):
         #Halt execution and register account for later deletion
         
         if(self.executor.static):
             return self.INVALID()
         
-        print("UNFINISHED")
+        address = self.stack.pop_int()
+        
+        #Send balance
+        external_contracts = self.executor.execution_context.external_contracts 
+        to_address = int.from_bytes(self.executor.address, byteorder="big")
+        print("address")
+        print(address)
+        print(to_address)
+    
+        if(external_contracts.get(address) and external_contracts[address].get("balance")):
+            external_contracts[address]["balance"] = external_contracts[address]["balance"] + external_contracts[to_address]["balance"] 
+        else:
+            external_contracts[address] = {"balance":external_contracts[to_address]["balance"] ,"bytecode":""} 
+        external_contracts[to_address]["balance"] = 0    
+        del external_contracts[to_address]
+        #SUCCESSFULLY DELETED CONTRACT
         return None 
         

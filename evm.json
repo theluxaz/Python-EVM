@@ -432,7 +432,7 @@
         "success": true
       }
     },
-        {
+    {
       "name": "SDIV",
       "hint": "Read \"Negative Numbers\" section of the course learning materials. SDIV works like DIV for \"positive\" numbers",
       "code": {

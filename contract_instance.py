@@ -1,6 +1,8 @@
 from execution_context import ExecutionContext
 from transaction_context import TransactionContext
 from executor import Executor
+from eth_hash.auto import keccak
+import rlp
 
 class ContractInstance:
 
@@ -35,10 +37,74 @@ class ContractInstance:
             else:
                 return (False, list(executor.instructions.stack.stack), executor.logs)
     
+    def create(self,value,bytecode_data):
+        #Runs code
+        print()
+        print("STARTING CREATE SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(f"External bytecode: {bytecode_data.hex()}")
+        
+        new_address = keccak(rlp.encode([self.transaction_context.to_address, self.transaction_context.nonce+1]))[12:]
+        print(f"New address is: {new_address.hex()}")
+        transaction_context_call =  TransactionContext(self.transaction_context.to_address,new_address,self.transaction_context.origin_address,value,"",self.transaction_context.gas_price,self.transaction_context.gas,self.transaction_context.nonce+1)
+        
+        executor = Executor(self,bytecode=bytecode_data,execution_context=self.execution_context,transaction_context=transaction_context_call)
+        result = executor.run()
+        print(f"Adding return DATA : {result.hex()} -----------------------------")
+        self.return_data = result
+        executor.print_logs()
+        # print(f"external code data 0 is {self.execution_context.external_contracts.items()}")
+        # print(f"external code LEN 0 is {len(self.execution_context.external_contracts.items())}")
+        
+        print("ENDING CREATE SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
+        if(executor.reverted):
+            return False,False
+        elif(executor.invalid):
+            return False,False
+        else:
+            self.execution_context.external_contracts[int.from_bytes(new_address, byteorder="big")] = {"value":value,"bytecode":result.hex()}
+            
+            print(f"external code data 1 is {self.execution_context.external_contracts.items()}")
+            return new_address,True
+    
+    def create2(self,value,bytecode_data,salt):
+        #Runs code
+        print()
+        print("STARTING CREATE2 SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(f"External bytecode: {bytecode_data.hex()}")
+        
+        new_address = keccak(rlp.encode([b'\xff' + self.transaction_context.to_address, salt, self.transaction_context.nonce+1]))[12:]
+        print(f"New address is: {new_address.hex()}")
+        transaction_context_call =  TransactionContext(self.transaction_context.to_address,new_address,self.transaction_context.origin_address,value,"",self.transaction_context.gas_price,self.transaction_context.gas,self.transaction_context.nonce+1)
+        
+        executor = Executor(self,bytecode=bytecode_data,execution_context=self.execution_context,transaction_context=transaction_context_call)
+        result = executor.run()
+        print(f"Adding return DATA : {result.hex()} -----------------------------")
+        self.return_data = result
+        executor.print_logs()
+        # print(f"external code data 0 is {self.execution_context.external_contracts.items()}")
+        # print(f"external code LEN 0 is {len(self.execution_context.external_contracts.items())}")
+        
+        print("ENDING CREATE2 SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
+        if(executor.reverted):
+            return False,False
+        elif(executor.invalid):
+            return False,False
+        else:
+            self.execution_context.external_contracts[int.from_bytes(new_address, byteorder="big")] = {"value":value,"bytecode":result.hex()}
+            
+            print(f"external code data 1 is {self.execution_context.external_contracts.items()}")
+            return new_address,True
+    
     def static_call(self,gas,address,calldata):
         #Runs code
         print("STARTING STATIC CALL SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        external_bytecode = bytearray.fromhex(self.execution_context.external_contracts[address]["bytecode"])
+        try:
+            external_bytecode = bytearray.fromhex(self.execution_context.external_contracts[address]["bytecode"])
+        except:
+            print("Address not found")
+            return False,False
         print(f"External bytecode: {external_bytecode}")
         
         transaction_context_call =  TransactionContext(self.transaction_context.to_address,address,self.transaction_context.origin_address,0,calldata,self.transaction_context.gas_price,gas,self.transaction_context.nonce+1)
@@ -61,7 +127,12 @@ class ContractInstance:
     def call(self,gas,address,value,calldata):
         #Runs code
         print("STARTING CALL SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        external_bytecode = bytearray.fromhex(self.execution_context.external_contracts[address]["bytecode"])
+        try:
+            external_bytecode = bytearray.fromhex(self.execution_context.external_contracts[address]["bytecode"])
+        except:
+            print("Address not found")
+            return False,False
+            
         print(f"External bytecode: {external_bytecode}")
         
         transaction_context_call =  TransactionContext(self.transaction_context.to_address,address,self.transaction_context.origin_address,value,calldata,self.transaction_context.gas_price,gas,self.transaction_context.nonce+1)
@@ -84,7 +155,12 @@ class ContractInstance:
     def delegate_call(self,gas,address,calldata,storage):
         #Runs delegate call code
         print("STARTING DELEGATE CALL SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        external_bytecode = bytearray.fromhex(self.execution_context.external_contracts[address]["bytecode"])
+        try:
+            external_bytecode = bytearray.fromhex(self.execution_context.external_contracts[address]["bytecode"])
+        except:
+            print("Address not found")
+            return False,False
+            
         print(f"External bytecode: {external_bytecode}")
         
         transaction_context_call =  TransactionContext(self.transaction_context.to_address,self.transaction_context.to_address,self.transaction_context.origin_address,self.transaction_context.value,calldata,self.transaction_context.gas_price,gas,self.transaction_context.nonce+1)
@@ -108,7 +184,11 @@ class ContractInstance:
     def call_code(self,gas,address,value,calldata,storage):
         #Runs delegate call code
         print("STARTING CALLCODE SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        external_bytecode = bytearray.fromhex(self.execution_context.external_contracts[address]["bytecode"])
+        try:
+            external_bytecode = bytearray.fromhex(self.execution_context.external_contracts[address]["bytecode"])
+        except:
+            print("Address not found")
+            return False,False
         print(f"External bytecode: {external_bytecode}")
         
         transaction_context_call =  TransactionContext(self.transaction_context.to_address,self.transaction_context.to_address,self.transaction_context.origin_address,value,calldata,self.transaction_context.gas_price,gas,self.transaction_context.nonce+1)

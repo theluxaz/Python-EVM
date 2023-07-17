@@ -34,15 +34,15 @@ class Executor:
             instruction = self.get_next_opcode()
             self.gas_remaining = self.gas_remaining - instruction["gas"]
             if (self.pc > len(self.bytecode)):
-                print("STOPPING RUNTIME - CODE FINISHED")
+                print("CODE FINISHED - STOPPING")
                 print()
                 self.stopped = True
-                return "CODE FINISHED"
+                return False
             # elif (instruction["name"]== "STOP"):
             #     print("STOPPING RUNTIME - STOP COMMAND")
             #     print()
             #     self.stopped = True
-            #     return "Stopped"
+            #     return "STOPPED"
             #TODO ADD PROPER GAS ERRORS - ENABLE LATER AFTER TESTING
             # elif (self.gas_remaining < 0):
             #     print("STOPPING RUNTIME - OUT OF GAS")
@@ -55,7 +55,6 @@ class Executor:
             result = processing_function()
 
             self.instructions.stack.print()
-
             
             if(self.returned or self.reverted):
                 return result
@@ -64,12 +63,12 @@ class Executor:
             #     return "REVERT"
             elif(self.stopped):
                 #TODO IMPLEMENT STOPPED FUNCTIONALITY
-                print("INVALID VALUE STOPPED PROGRAM")
-                return "STOPPED"
+                print("STOPPED PROGRAM")
+                return False
             elif(self.invalid):
                 #TODO IMPLEMENT INVALID FUNCTIONALITY
                 print("INVALID VALUE STOPPED PROGRAM")
-                return "INVALID"
+                return False
             
             print(result)
             if(result):
@@ -141,21 +140,21 @@ class Executor:
             print("") 
             instruction = self.get_next_opcode()
             self.gas_remaining = self.gas_remaining - instruction["gas"]
-            if (self.pc > len(bytecode)):
-                print("STOPPING RUNTIME - CODE FINISHED")
+            if (self.pc > len(self.bytecode)):
+                print("CODE FINISHED - STOPPING")
                 print()
-                self.stopped == True
-                return "STOPPED"
+                self.stopped = True
+                return False
             # elif (instruction["name"]== "STOP"):
             #     print("STOPPING RUNTIME - STOP COMMAND")
             #     print()
-            #     self.stopped == True
+            #     self.stopped = True
             #     return "STOPPED"
             #TODO ADD PROPER GAS ERRORS - ENABLE LATER AFTER TESTING
             # elif (self.gas_remaining < 0):
             #     print("STOPPING RUNTIME - OUT OF GAS")
             #     print()
-            #     self.stopped == True
+            #     self.stopped = True
             #     return "STOPPED"
             print(f"Opcode Instruction  is : {instruction}")
 
@@ -171,11 +170,12 @@ class Executor:
             #     return "REVERT"
             elif(self.stopped):
                 #TODO IMPLEMENT STOPPED FUNCTIONALITY
-                print("stop actuator")
-                return "STOPPED"
+                print("STOPPED PROGRAM")
+                return False
             elif(self.invalid):
                 #TODO IMPLEMENT INVALID FUNCTIONALITY
-                return "INVALID"
+                print("INVALID VALUE STOPPED PROGRAM")
+                return False
             
             print(result)
             if(result):

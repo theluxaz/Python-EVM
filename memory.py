@@ -14,17 +14,21 @@ class Memory:
         self.bytes_array = bytearray(0)
 
     def store(self, offset: int, value:bytearray):
-
-        length_needed= offset+len(value)+word_length
+        processed_value = bytearray(value)
+        length_needed= offset+word_length
         
         if(length_needed > len(self.bytes_array)):
             self.expand_memory(length_needed)
-             
-
-        for index, byte in enumerate(value):
+        print(f"value {processed_value}")
+        print(f"value {processed_value.extend(bytearray(word_length-len(processed_value)))}")
+        if(len(processed_value)<word_length):
+            processed_value = processed_value.extend(bytearray(word_length-len(processed_value)))
+        # value_extended = value.rjust(32, b'\x00')[-32:]
+        print(f"value_extended {processed_value}")
+        for index, byte in enumerate(processed_value):
                 self.bytes_array[offset + index] = byte
         print_memory(self.bytes_array)
-        return value
+        return processed_value
 
     def store8(self, offset: int, value:bytearray) -> None:
         
