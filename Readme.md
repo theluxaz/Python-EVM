@@ -37,10 +37,11 @@ This is a project to recreate EVM in Python from scratch. Please do not use this
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-To do later.
+The main program loop is located at run.py. You can either run the provided EVM test by setting "TESTING = True" 
+or insert your own bytecode in hex in "hexcode" variable and set "TESTING" to False.
 
-<!-- _For more examples, please refer to the [Documentation](https://example.com)_ -->
-
+Please edit the execution context data and transaction data in "run.py" as you see fit for each run. 
+The "ethereum network" is located in variable "external_contracts" in this scope for access.
 
 
 <!-- ROADMAP -->
