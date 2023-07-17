@@ -2,16 +2,15 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-
 This is a project to recreate EVM in Python from scratch. Please do not use this in production applications.
 
+The main goal of this project was to learn the inner workings of the EVM, its opcodes and architecture. This program only focuses on EVM and does not include a full Ethereum client (node) implementation. Consensus clients, Execution clients and interactions with the network are out of scope for this project. 
 
+The majority of work done was to create a bytecode processing machine that would resemble a real EVM and provide accurate results, given proper inputs. EVM architecture and opcode implementation were the main focus.
 
 
 <!-- GETTING STARTED -->
 ## Getting Started
-
-
 
 ### Installation
 
@@ -30,8 +29,6 @@ This is a project to recreate EVM in Python from scratch. Please do not use this
    ```sh
    python run.py
    ```
-
-
 
 
 <!-- USAGE EXAMPLES -->
