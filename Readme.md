@@ -105,6 +105,8 @@ Added functionality for testing opcodes from evm-from-scratch-challenge resource
 ### Day 8: (July 16)
 Added many more opcodes which needed major refactoring, such as CALL, DELEGATECALL, RETURNDATACOPY etc. Reworked context nesting and reverting. Tested and fixed most implemented opcodes.
 
+### Day 9: (July 17)
+Finished all the remaining Opcodes such as CREATE, CREATE2 and SELFDESTRUCT. Made the EVM fully functional and tested. Code cleanup and refactoring needed.
 
 
 <!-- LICENSE -->
