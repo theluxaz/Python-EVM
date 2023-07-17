@@ -77,6 +77,14 @@ To do later.
 - [x] System operations
 - [x] Halt Execution, Mark for deletion Operations
 
+<!-- FUTURE IMPROVEMENTS -->
+## Future Improvements
+
+* Add block header history for BLOCKHASH
+* Dynamic Gas
+* Add validation
+* Errors for edge cases
+* Refactor and clean code
 
 <!-- DAILY -->
 ## Daily Progress
@@ -105,7 +113,7 @@ Added functionality for testing opcodes from evm-from-scratch-challenge resource
 ### Day 8: (July 16)
 Added many more opcodes which needed major refactoring, such as CALL, DELEGATECALL, RETURNDATACOPY etc. Reworked context nesting and reverting. Tested and fixed most implemented opcodes.
 
-### Day 9: (July 17)
+### Day 9: (July 16)
 Finished all the remaining Opcodes such as CREATE, CREATE2 and SELFDESTRUCT. Made the EVM fully functional and tested. Code cleanup and refactoring needed.
 
 
