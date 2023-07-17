@@ -11,32 +11,26 @@ This is a project to recreate EVM in Python from scratch. Please do not use this
 <!-- GETTING STARTED -->
 ## Getting Started
 
-To do later.
 
-<!-- ### Prerequisites
-
-To do later.
-
-* npm
-  ```sh
-  npm install npm@latest -g
-  ```
 
 ### Installation
 
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
+1. Install Python 3.8+
+
+2. Install required pip packages ("eth-hash","simple-rlp")
    ```sh
-   git clone https://github.com/github_username/repo_name.git
+   pip install eth-hash
+   pip install simple-rlp
    ```
-3. Install NPM packages
+3. Clone the repo
    ```sh
-   npm install
+   git clone https://github.com/theluxaz/Python-EVM.git
    ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
-   ``` -->
+4. Run run.py after inserting values
+   ```sh
+   python run.py
+   ```
+
 
 
 
@@ -81,6 +75,7 @@ To do later.
 ## Future Improvements
 
 * Add block header history for BLOCKHASH
+* Blockchain persistence via Merkle Patricia Trie
 * Dynamic Gas
 * Add validation
 * Errors for edge cases
