@@ -39,7 +39,7 @@ external_contracts ={
 # starting_gas = 40000
 execution_context_data = {"block_hash": 0xbc0ecefe7626a1fba4a136446afe38dd516e881a770743045d468a4bf098a2b3, 
                  "block_number":16777217,
-                 "block_difficulty":131072,
+                 "block_prevrandao":131072,
                  "coinbase": 0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5, 
                  "timestamp": 15000001,
                  "gas_limit":281474976710655,
@@ -72,7 +72,7 @@ transaction_context_data = {"caller_address": 0x1e79b045dc29eae9fdc69673c9dcd7c5
 #                 }
 # execution_context_data = {"block_hash": 0xbc0ecefe7626a1fba4a136446afe38dd516e881a770743045d468a4bf098a2b3, 
 #                  "block_number":16777217,
-#                  "block_difficulty":131072,
+#                  "block_prevrandao":131072,
 #                  "coinbase": 0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5, 
 #                  "timestamp": 15000001,
 #                  "gas_limit":281474976710655,

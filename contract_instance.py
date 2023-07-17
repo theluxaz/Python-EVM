@@ -49,7 +49,7 @@ class ContractInstance:
         
         executor = Executor(self,bytecode=bytecode_data,execution_context=self.execution_context,transaction_context=transaction_context_call)
         result = executor.run()
-        print(f"Adding return DATA : {result.hex()} -----------------------------")
+        print(f"Adding return DATA : {result} -----------------------------")
         self.return_data = result
         executor.print_logs()
         # print(f"external code data 0 is {self.execution_context.external_contracts.items()}")
@@ -57,12 +57,16 @@ class ContractInstance:
         
         print("ENDING CREATE SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
-        if(executor.reverted):
+        if(executor.reverted or executor.invalid):
             return False,False
-        elif(executor.invalid):
-            return False,False
+        elif(executor.finished):
+            if(result):
+                self.execution_context.external_contracts[int.from_bytes(new_address, byteorder="big")] = {"balance":value,"bytecode":result.hex()}
+            else:
+                self.execution_context.external_contracts[int.from_bytes(new_address, byteorder="big")] = {"balance":value,"bytecode":""}
+            return new_address,True
         else:
-            self.execution_context.external_contracts[int.from_bytes(new_address, byteorder="big")] = {"value":value,"bytecode":result.hex()}
+            self.execution_context.external_contracts[int.from_bytes(new_address, byteorder="big")] = {"balance":value,"bytecode":result.hex()}
             
             print(f"external code data 1 is {self.execution_context.external_contracts.items()}")
             return new_address,True
@@ -87,12 +91,16 @@ class ContractInstance:
         
         print("ENDING CREATE2 SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
-        if(executor.reverted):
+        if(executor.reverted or executor.invalid):
             return False,False
-        elif(executor.invalid):
-            return False,False
+        elif(executor.finished):
+            if(result):
+                self.execution_context.external_contracts[int.from_bytes(new_address, byteorder="big")] = {"balance":value,"bytecode":result.hex()}
+            else:
+                self.execution_context.external_contracts[int.from_bytes(new_address, byteorder="big")] = {"balance":value,"bytecode":""}
+            return new_address,True
         else:
-            self.execution_context.external_contracts[int.from_bytes(new_address, byteorder="big")] = {"value":value,"bytecode":result.hex()}
+            self.execution_context.external_contracts[int.from_bytes(new_address, byteorder="big")] = {"balance":value,"bytecode":result.hex()}
             
             print(f"external code data 1 is {self.execution_context.external_contracts.items()}")
             return new_address,True

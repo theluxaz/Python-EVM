@@ -91,7 +91,10 @@ class Instructions:
         a = self.stack.pop_int()
         b = self.stack.pop_int()
 
+        print()
+        print(f"Unsign {a}")
         num = unsigned_to_signed(a)
+        print(f"Signed {num}")
         den = unsigned_to_signed(b)
 
         
@@ -333,7 +336,7 @@ class Instructions:
 
         return self.stack.push_int((val >> shift)& max_value)
 
-    #UNFINISHED  - More info: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-145.md
+    # More info: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-145.md
     # Implementation here from EIP https://github.com/ethereum/aleth/pull/4054/files
     #OPCODE     GAS
     #1D         3  
@@ -344,8 +347,12 @@ class Instructions:
         #the new bits are set to 0 if the previous most significant bit was 0, otherwise the new bits are set to 1.
         shift = self.stack.pop_int()
         val = self.stack.pop_int()
+        
+        val = unsigned_to_signed(val)
+        
         if(shift>= 256):
-            return self.stack.push_int(0)
+            result = 0 if val >= 0 else (-1 +2**256)
+            return self.stack.push_int(result)
         
         return self.stack.push_int((val >> shift)& max_value)
 
@@ -386,10 +393,10 @@ class Instructions:
     def BALANCE(self):
         #Checks the balance of given address
         address = self.stack.pop_int()
+        external_contracts = self.executor.execution_context.external_contracts
         if(address):
-            
-            if(self.executor.execution_context.external_contracts.get(address) and self.executor.execution_context.external_contracts[address].get("balance")):
-                return self.stack.push_int(self.executor.execution_context.external_contracts[address]["balance"])
+            if(external_contracts.get(address) and external_contracts[address].get("balance")):
+                return self.stack.push_int(external_contracts[address]["balance"])
             else:
                 return self.stack.push_int(0)
         else:
@@ -559,7 +566,7 @@ class Instructions:
 
     #Block Information
 
-    #NOT DONE - IMPLEMENT HASH HISTORY LATER
+    #NOT IMPLEMENTED - FULL ETHEREUM CLIENT NEEDED FOR BLOCK HISTORY
     #OPCODE     GAS
     #40         20 
     def BLOCKHASH(self):
@@ -589,9 +596,9 @@ class Instructions:
 
     #OPCODE     GAS
     #44         2  
-    def DIFFICULTY(self):
-        #Get the block’s difficulty
-        return self.stack.push_int(self.executor.execution_context.block_difficulty)
+    def PREVRANDAO(self):
+        #Get the block’s PREVRANDAO VALUE
+        return self.stack.push_int(self.executor.execution_context.block_prevrandao)
 
     #OPCODE     GAS
     #45         2  

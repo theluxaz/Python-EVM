@@ -23,6 +23,7 @@ class Executor:
         self.pc = 0
         self.static = static
         self.stopped = False
+        self.finished = False
         self.reverted = False
         self.returned = False
         self.invalid = False
@@ -36,7 +37,7 @@ class Executor:
             if (self.pc > len(self.bytecode)):
                 print("CODE FINISHED - STOPPING")
                 print()
-                self.stopped = True
+                self.finished = True
                 return False
             # elif (instruction["name"]== "STOP"):
             #     print("STOPPING RUNTIME - STOP COMMAND")
@@ -88,7 +89,7 @@ class Executor:
             if (self.pc > len(self.bytecode)):
                 print("CODE FINISHED - STOPPING")
                 print()
-                self.stopped = True
+                self.finished = True
                 return False
             # elif (instruction["name"]== "STOP"):
             #     print("STOPPING RUNTIME - STOP COMMAND")
@@ -143,7 +144,7 @@ class Executor:
             if (self.pc > len(self.bytecode)):
                 print("CODE FINISHED - STOPPING")
                 print()
-                self.stopped = True
+                self.finished = True
                 return False
             # elif (instruction["name"]== "STOP"):
             #     print("STOPPING RUNTIME - STOP COMMAND")

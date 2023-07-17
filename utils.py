@@ -1,7 +1,7 @@
 from collections import deque
 
 def unsigned_to_signed(value: int) -> int:
-    if value <= (2**256 - 1):
+    if value <= (2**255 - 1):
         return value
     else:
         return value - (2**256)

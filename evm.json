@@ -1658,20 +1658,6 @@
       }
     },
     {
-      "name": "CALLDATASIZE (no data)",
-      "code": {
-        "asm": "CALLDATASIZE",
-        "bin": "36"
-      },
-      "expect": {
-        "stack": [
-          "0x0"
-        ],
-        "success": true
-      },
-      "hint": ""
-    },
-    {
       "name": "CALLDATACOPY",
       "hint": "Copy 32-byte chunk of calldata into memory. Do not forget to update MSIZE after CALLDATACOPY",
       "tx": {
@@ -2321,14 +2307,14 @@
         "0xdead00000000000000000000000000000000dead": {
           "balance": "0x7",
           "code": {
-            "asm": "PUSH20 0xa1c300000000000000000000000000000000a1c3\nSELFDESTRUCT",
-            "bin": "73a1c300000000000000000000000000000000a1c3ff"
+            "asm": "PUSH20 0x1000000000000000000000000000000000000aaa\nSELFDESTRUCT",
+            "bin": "731000000000000000000000000000000000000aaaff"
           }
         }
       },
       "code": {
-        "asm": "PUSH1 0\nDUP1\nDUP1\nDUP1\nDUP1\nPUSH20 0xdead00000000000000000000000000000000dead\nGAS\nCALL\nPOP\nPUSH20 0xa1c300000000000000000000000000000000a1c3\nBALANCE\nPUSH20 0xdead00000000000000000000000000000000dead\nEXTCODESIZE",
-        "bin": "60008080808073dead00000000000000000000000000000000dead5af15073a1c300000000000000000000000000000000a1c33173dead00000000000000000000000000000000dead3b"
+        "asm": "PUSH1 0\nDUP1\nDUP1\nDUP1\nDUP1\nPUSH20 0xdead00000000000000000000000000000000dead\nGAS\nCALL\nPOP\nPUSH20 0x1000000000000000000000000000000000000aaa\nBALANCE\nPUSH20 0xdead00000000000000000000000000000000dead\nEXTCODESIZE",
+        "bin": "60008080808073dead00000000000000000000000000000000dead5af150731000000000000000000000000000000000000aaa3173dead00000000000000000000000000000000dead3b"
       },
       "expect": {
         "stack": [

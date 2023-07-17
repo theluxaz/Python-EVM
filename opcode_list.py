@@ -197,7 +197,7 @@ opcodes_list = [
     "mnemonic":0x43,
     "gas":2
     },
-    {"name":"DIFFICULTY",
+    {"name":"PREVRANDAO",
     "mnemonic":0x44,
     "gas":2
     },

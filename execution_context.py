@@ -6,7 +6,7 @@ class ExecutionContext:
 
     def __init__(self, block_hash: bytearray, 
                  block_number:int,
-                 block_difficulty:int,
+                 block_prevrandao:int,
                  coinbase: bytearray, 
                  timestamp: int,
                  gas_limit:int,
@@ -18,7 +18,7 @@ class ExecutionContext:
                  
         self.block_hash = block_hash.to_bytes(32, byteorder = 'big')
         self.block_number = block_number
-        self.block_difficulty = block_difficulty
+        self.block_prevrandao = block_prevrandao
         self.coinbase = coinbase.to_bytes(20, byteorder = 'big')
         self.timestamp = timestamp
         self.gas_limit = gas_limit
