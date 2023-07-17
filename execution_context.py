@@ -16,10 +16,10 @@ class ExecutionContext:
                  external_contracts:dict
                  ) -> None:
                  
-        self.block_hash = block_hash.to_bytes(32, byteorder = 'big')
+        self.block_hash = bytearray.fromhex(block_hash)
         self.block_number = block_number
         self.block_prevrandao = block_prevrandao
-        self.coinbase = coinbase.to_bytes(20, byteorder = 'big')
+        self.coinbase = bytearray.fromhex(coinbase)
         self.timestamp = timestamp
         self.gas_limit = gas_limit
         self.chain_id = chain_id

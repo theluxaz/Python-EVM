@@ -13,20 +13,32 @@ class ContractInstance:
     
     def run_instance(self,bytecode):
         #Runs code
-        print("Running Instance --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        executor = Executor(self,bytecode=bytecode,execution_context=self.execution_context,transaction_context=self.transaction_context)
-        result = executor.run()
+        print("Running Instance!")
+        executor = None
+        result = None
+        try:
+            executor = Executor(self,bytecode=bytecode,execution_context=self.execution_context,transaction_context=self.transaction_context)
+            result = executor.run()
+        except Exception as error:
+            print(error)
+            executor.revert_transaction()
         executor.print_logs()
         return result
     
     def run_instance_test(self,bytecode):
         #Runs code
-        print("Running Instance --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        executor = Executor(self,bytecode=bytecode,execution_context=self.execution_context,transaction_context=self.transaction_context)
-        result = executor.run_testing()
+        print("Running Instance!")
+        executor = None
+        result = None
+        try:
+            executor = Executor(self,bytecode=bytecode,execution_context=self.execution_context,transaction_context=self.transaction_context)
+            result = executor.run()
+        except Exception as error:
+            print(error)
+            executor.revert_transaction()
+                
         executor.print_logs()
-        print(result)
-        if( executor.reverted == False and executor.invalid == False):
+        if( executor and executor.reverted == False and executor.invalid == False):
             if(list(executor.instructions.stack.stack)):
                 return (True, list(reversed((list(executor.instructions.stack.stack)))), executor.logs)
             else:
@@ -41,53 +53,55 @@ class ContractInstance:
         #Runs code
         print()
         print("STARTING CREATE SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        print(f"External bytecode: {bytecode_data.hex()}")
-        
         new_address = keccak(rlp.encode([self.transaction_context.to_address, self.transaction_context.nonce+1]))[12:]
-        print(f"New address is: {new_address.hex()}")
         transaction_context_call =  TransactionContext(self.transaction_context.to_address,new_address,self.transaction_context.origin_address,value,"",self.transaction_context.gas_price,self.transaction_context.gas,self.transaction_context.nonce+1)
         
-        executor = Executor(self,bytecode=bytecode_data,execution_context=self.execution_context,transaction_context=transaction_context_call)
-        result = executor.run()
+        executor = None
+        result = None
+        try:
+            executor = Executor(self,bytecode=bytecode_data,execution_context=self.execution_context,transaction_context=transaction_context_call)
+            result = executor.run()
+        except Exception as error:
+            print(error)
+            executor.revert_transaction()
+        executor.update_nonce()
+        
         print(f"Adding return DATA : {result} -----------------------------")
         self.return_data = result
         executor.print_logs()
-        # print(f"external code data 0 is {self.execution_context.external_contracts.items()}")
-        # print(f"external code LEN 0 is {len(self.execution_context.external_contracts.items())}")
-        
         print("ENDING CREATE SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
         if(executor.reverted or executor.invalid):
             return False,False
         elif(executor.finished):
             if(result):
-                self.execution_context.external_contracts[int.from_bytes(new_address, byteorder="big")] = {"balance":value,"bytecode":result.hex()}
+                self.execution_context.external_contracts[new_address.hex()] = {"balance":value,"bytecode":result.hex()}
             else:
-                self.execution_context.external_contracts[int.from_bytes(new_address, byteorder="big")] = {"balance":value,"bytecode":""}
+                self.execution_context.external_contracts[new_address.hex()] = {"balance":value,"bytecode":""}
             return new_address,True
         else:
-            self.execution_context.external_contracts[int.from_bytes(new_address, byteorder="big")] = {"balance":value,"bytecode":result.hex()}
-            
-            print(f"external code data 1 is {self.execution_context.external_contracts.items()}")
+            self.execution_context.external_contracts[new_address.hex()] = {"balance":value,"bytecode":result.hex()}
             return new_address,True
     
     def create2(self,value,bytecode_data,salt):
         #Runs code
         print()
         print("STARTING CREATE2 SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        print(f"External bytecode: {bytecode_data.hex()}")
         
         new_address = keccak(rlp.encode([b'\xff' + self.transaction_context.to_address, salt, self.transaction_context.nonce+1]))[12:]
-        print(f"New address is: {new_address.hex()}")
         transaction_context_call =  TransactionContext(self.transaction_context.to_address,new_address,self.transaction_context.origin_address,value,"",self.transaction_context.gas_price,self.transaction_context.gas,self.transaction_context.nonce+1)
         
-        executor = Executor(self,bytecode=bytecode_data,execution_context=self.execution_context,transaction_context=transaction_context_call)
-        result = executor.run()
-        print(f"Adding return DATA : {result.hex()} -----------------------------")
+        executor = None
+        result = None
+        try:
+            executor = Executor(self,bytecode=bytecode_data,execution_context=self.execution_context,transaction_context=transaction_context_call)
+            result = executor.run()
+        except Exception as error:
+            print(error)
+            executor.revert_transaction()
+        executor.update_nonce()
         self.return_data = result
         executor.print_logs()
-        # print(f"external code data 0 is {self.execution_context.external_contracts.items()}")
-        # print(f"external code LEN 0 is {len(self.execution_context.external_contracts.items())}")
         
         print("ENDING CREATE2 SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
@@ -95,14 +109,12 @@ class ContractInstance:
             return False,False
         elif(executor.finished):
             if(result):
-                self.execution_context.external_contracts[int.from_bytes(new_address, byteorder="big")] = {"balance":value,"bytecode":result.hex()}
+                self.execution_context.external_contracts[new_address.hex()] = {"balance":value,"bytecode":result.hex()}
             else:
-                self.execution_context.external_contracts[int.from_bytes(new_address, byteorder="big")] = {"balance":value,"bytecode":""}
+                self.execution_context.external_contracts[new_address.hex()] = {"balance":value,"bytecode":""}
             return new_address,True
         else:
-            self.execution_context.external_contracts[int.from_bytes(new_address, byteorder="big")] = {"balance":value,"bytecode":result.hex()}
-            
-            print(f"external code data 1 is {self.execution_context.external_contracts.items()}")
+            self.execution_context.external_contracts[new_address.hex()] = {"balance":value,"bytecode":result.hex()}
             return new_address,True
     
     def static_call(self,gas,address,calldata):
@@ -113,18 +125,23 @@ class ContractInstance:
         except:
             print("Address not found")
             return False,False
-        print(f"External bytecode: {external_bytecode}")
         
         transaction_context_call =  TransactionContext(self.transaction_context.to_address,address,self.transaction_context.origin_address,0,calldata,self.transaction_context.gas_price,gas,self.transaction_context.nonce+1)
         
-        executor = Executor(self,bytecode=external_bytecode,execution_context=self.execution_context,transaction_context=transaction_context_call,static=True)
-        result = executor.run()
-        print(f"Adding return DATA : {result} -----------------------------")
+        executor = None
+        result = None
+        try:
+            executor = Executor(self,bytecode=external_bytecode,execution_context=self.execution_context,transaction_context=transaction_context_call,static=True)
+            result = executor.run()
+        except Exception as error:
+            print(error)
+            executor.revert_transaction()
+        executor.update_nonce()
+        
         self.return_data = result
         executor.print_logs()
         
         print("ENDING STATIC CALL SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        print(executor.stopped)
         if(executor.reverted):
             return result,False
         elif(executor.invalid):
@@ -140,17 +157,21 @@ class ContractInstance:
         except:
             print("Address not found")
             return False,False
-            
-        print(f"External bytecode: {external_bytecode}")
-        
+                    
         transaction_context_call =  TransactionContext(self.transaction_context.to_address,address,self.transaction_context.origin_address,value,calldata,self.transaction_context.gas_price,gas,self.transaction_context.nonce+1)
         
-        executor = Executor(self,bytecode=external_bytecode,execution_context=self.execution_context,transaction_context=transaction_context_call)
-        result = executor.run()
-        print(f"Adding return DATA : {result} -----------------------------")
+        executor = None
+        result = None
+        try:
+            executor = Executor(self,bytecode=external_bytecode,execution_context=self.execution_context,transaction_context=transaction_context_call)
+            result = executor.run()
+        except Exception as error:
+            print(error)
+            executor.revert_transaction()
+
+        executor.update_nonce()
         self.return_data = result
         executor.print_logs()
-        
         print("ENDING CALL SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
         if(executor.reverted):
@@ -168,14 +189,19 @@ class ContractInstance:
         except:
             print("Address not found")
             return False,False
-            
-        print(f"External bytecode: {external_bytecode}")
-        
+                    
         transaction_context_call =  TransactionContext(self.transaction_context.to_address,self.transaction_context.to_address,self.transaction_context.origin_address,self.transaction_context.value,calldata,self.transaction_context.gas_price,gas,self.transaction_context.nonce+1)
         
-        executor = Executor(self,bytecode=external_bytecode,execution_context=self.execution_context,transaction_context=transaction_context_call,storage=storage)
-        result = executor.run()
-        print(f"Adding return DATA : {result} -----------------------------")
+        executor = None
+        result = None
+        try:
+            executor = Executor(self,bytecode=external_bytecode,execution_context=self.execution_context,transaction_context=transaction_context_call,storage=storage)
+            result = executor.run()
+        except Exception as error:
+            print(error)
+            executor.revert_transaction()
+
+        executor.update_nonce()
         self.return_data = result
         executor.print_logs()
         
@@ -197,13 +223,19 @@ class ContractInstance:
         except:
             print("Address not found")
             return False,False
-        print(f"External bytecode: {external_bytecode}")
         
         transaction_context_call =  TransactionContext(self.transaction_context.to_address,self.transaction_context.to_address,self.transaction_context.origin_address,value,calldata,self.transaction_context.gas_price,gas,self.transaction_context.nonce+1)
         
-        executor = Executor(self,bytecode=external_bytecode,execution_context=self.execution_context,transaction_context=transaction_context_call,storage=storage)
-        result = executor.run()
-        print(f"Adding return DATA : {result} -----------------------------")
+        executor = None
+        result = None
+        try:
+            executor = Executor(self,bytecode=external_bytecode,execution_context=self.execution_context,transaction_context=transaction_context_call,storage=storage)
+            result = executor.run()
+        except Exception as error:
+            print(error)
+            executor.revert_transaction()
+
+        executor.update_nonce()
         self.return_data = result
         executor.print_logs()
         

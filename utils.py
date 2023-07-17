@@ -20,6 +20,7 @@ def print_deque(stack:deque):
     while (index >=0):
         print(f"{index} Item ---> bytes = {str(stack[index].hex())} ,  int = {str(int.from_bytes(stack[index], byteorder='big'))}")
         index-=1
+    print("")
 
 def print_memory(memory:bytearray):
     print("")
@@ -28,3 +29,4 @@ def print_memory(memory:bytearray):
         print(f"Memory location {index} ---> bytes = {memory[index:index+32].hex()} ")
         # print(f"memory length is {len(memory[index:index+32])}")
         index+=32
+    print("")

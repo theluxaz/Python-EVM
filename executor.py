@@ -30,7 +30,7 @@ class Executor:
 
     #main processing loop
     def run(self):
-        while not self.stopped and not self.reverted and not self.returned:
+        while not self.stopped and not self.reverted and not self.returned and not self.finished:
             print("") 
             instruction = self.get_next_opcode()
             self.gas_remaining = self.gas_remaining - instruction["gas"]
@@ -39,82 +39,25 @@ class Executor:
                 print()
                 self.finished = True
                 return False
-            # elif (instruction["name"]== "STOP"):
-            #     print("STOPPING RUNTIME - STOP COMMAND")
-            #     print()
-            #     self.stopped = True
-            #     return "STOPPED"
             #TODO ADD PROPER GAS ERRORS - ENABLE LATER AFTER TESTING
-            # elif (self.gas_remaining < 0):
-            #     print("STOPPING RUNTIME - OUT OF GAS")
-            #     print()
-            #     self.stopped = True
-            #     return "STOPPED"
-            print(f"Opcode Instruction  is : {instruction}")
-
-            processing_function = self.instructions.get_instruction_function(instruction["name"])
-            result = processing_function()
-
-            self.instructions.stack.print()
-            
-            if(self.returned or self.reverted):
-                return result
-            # elif(self.reverted):
-            #     #TODO IMPLEMENT REVERT FUNCTIONALITY
-            #     return "REVERT"
-            elif(self.stopped):
-                #TODO IMPLEMENT STOPPED FUNCTIONALITY
-                print("STOPPED PROGRAM")
-                return False
-            elif(self.invalid):
-                #TODO IMPLEMENT INVALID FUNCTIONALITY
-                print("INVALID VALUE STOPPED PROGRAM")
-                return False
-            
-            print(result)
-            if(result):
-                if(type(result) == int):
-                    print(f"Processing result is : int {result}")
-                else:
-                    print(f"Processing result is : bytes {result.hex()}")
-            print(f"Gas remaining: {self.gas_remaining} / {self.gas_starting}")
-            print("--")   
-
-    #main processing loop
-    def run_testing(self):
-        while not self.stopped and not self.reverted and not self.returned:
-            print("") 
-            instruction = self.get_next_opcode()
-            self.gas_remaining = self.gas_remaining - instruction["gas"]
-            if (self.pc > len(self.bytecode)):
-                print("CODE FINISHED - STOPPING")
+            elif (self.gas_remaining < 0):
+                print("OUT OF GAS - STOPPING")
                 print()
-                self.finished = True
+                self.stopped = True
                 return False
-            # elif (instruction["name"]== "STOP"):
-            #     print("STOPPING RUNTIME - STOP COMMAND")
-            #     print()
-            #     self.stopped = True
-            #     return "STOPPED"
-            #TODO ADD PROPER GAS ERRORS - ENABLE LATER AFTER TESTING
-            # elif (self.gas_remaining < 0):
-            #     print("STOPPING RUNTIME - OUT OF GAS")
-            #     print()
-            #     self.stopped = True
-            #     return "STOPPED"
+            
             print(f"Opcode Instruction  is : {instruction}")
 
             processing_function = self.instructions.get_instruction_function(instruction["name"])
             result = processing_function()
 
+                
+
             self.instructions.stack.print()
             
             if(self.returned or self.reverted):
                 return result
-            # elif(self.reverted):
-            #     #TODO IMPLEMENT REVERT FUNCTIONALITY
-            #     return "REVERT"
-            elif(self.stopped):
+            elif(self.stopped or self.finished):
                 #TODO IMPLEMENT STOPPED FUNCTIONALITY
                 print("STOPPED PROGRAM")
                 return False
@@ -122,72 +65,16 @@ class Executor:
                 #TODO IMPLEMENT INVALID FUNCTIONALITY
                 print("INVALID VALUE STOPPED PROGRAM")
                 return False
-            
-            print(result)
-            if(result):
-                if(type(result) == int):
-                    print(f"Processing result is : int {result}")
-                else:
-                    print(f"Processing result is : bytes {result.hex()}")
-            print(f"Gas remaining: {self.gas_remaining} / {self.gas_starting}")
-            print("--")  
-            
-    #delegate call processing loop
-    def run_delegate_call(self,bytecode_provided):
-        print("STARTING DELEGATE CALL SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        bytecode=bytecode_provided
-        self.pc = 0
-        while not self.stopped and not self.reverted and not self.returned:
-            print("") 
-            instruction = self.get_next_opcode()
-            self.gas_remaining = self.gas_remaining - instruction["gas"]
-            if (self.pc > len(self.bytecode)):
-                print("CODE FINISHED - STOPPING")
-                print()
-                self.finished = True
-                return False
-            # elif (instruction["name"]== "STOP"):
-            #     print("STOPPING RUNTIME - STOP COMMAND")
-            #     print()
-            #     self.stopped = True
-            #     return "STOPPED"
-            #TODO ADD PROPER GAS ERRORS - ENABLE LATER AFTER TESTING
-            # elif (self.gas_remaining < 0):
-            #     print("STOPPING RUNTIME - OUT OF GAS")
-            #     print()
-            #     self.stopped = True
-            #     return "STOPPED"
-            print(f"Opcode Instruction  is : {instruction}")
+      
+    def revert_transaction(self):
+        self.transaction_context.gas = self.gas_remaining
 
-            processing_function = self.instructions.get_instruction_function(instruction["name"])
-            result = processing_function()
-
-            self.instructions.stack.print()
+    def finish_transaction(self):
+        self.transaction_context.gas = self.gas_remaining
             
-            if(self.returned or self.reverted):
-                return result
-            # elif(self.reverted):
-            #     #TODO IMPLEMENT REVERT FUNCTIONALITY
-            #     return "REVERT"
-            elif(self.stopped):
-                #TODO IMPLEMENT STOPPED FUNCTIONALITY
-                print("STOPPED PROGRAM")
-                return False
-            elif(self.invalid):
-                #TODO IMPLEMENT INVALID FUNCTIONALITY
-                print("INVALID VALUE STOPPED PROGRAM")
-                return False
+    def update_nonce(self):
+        self.transaction_context.nonce = self.transaction_context.nonce+1
             
-            print(result)
-            if(result):
-                if(type(result) == int):
-                    print(f"Processing result is : int {result}")
-                else:
-                    print(f"Processing result is : bytes {result.hex()}")
-            print(f"Gas remaining: {self.gas_remaining} / {self.gas_starting}")
-            print("--")  
-            print("ENDING DELEGATE CALL SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-
     def process_bytecode(self, next_word) -> bytes:
         item = self.bytecode[self.pc : self.pc + next_word]
         self.pc += next_word

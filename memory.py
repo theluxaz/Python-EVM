@@ -10,7 +10,7 @@ class Memory:
     bytes_array = bytearray(0)
     
     def __init__(self) :
-        print("INITIALIZING MEMORY ----------------------------------------------")
+        print("INITIALIZING MEMORY")
         self.bytes_array = bytearray(0)
 
     def store(self, offset: int, value:bytearray):
@@ -19,12 +19,11 @@ class Memory:
         
         if(length_needed > len(self.bytes_array)):
             self.expand_memory(length_needed)
-        print(f"value {processed_value}")
-        print(f"value {processed_value.extend(bytearray(word_length-len(processed_value)))}")
-        if(len(processed_value)<word_length):
-            processed_value = processed_value.extend(bytearray(word_length-len(processed_value)))
-        # value_extended = value.rjust(32, b'\x00')[-32:]
-        print(f"value_extended {processed_value}")
+
+        processed_value.extend(bytearray(word_length-len(processed_value)))
+        # if(len(processed_value)<word_length):
+        #     processed_value = processed_value.extend(bytearray(word_length-len(processed_value)))
+
         for index, byte in enumerate(processed_value):
                 self.bytes_array[offset + index] = byte
         print_memory(self.bytes_array)
@@ -38,7 +37,6 @@ class Memory:
         
         for index, byte in enumerate(value):
                 self.bytes_array[offset + index] = byte
-        # self.bytes_array[offset] = value
         print_memory(self.bytes_array)
         return value
 
@@ -51,12 +49,7 @@ class Memory:
         return result
     
     def expand_memory(self, length_needed:int):
-        # print(f"Length needed is {length_needed} , number to add is {((length_needed)-len(self.bytes_array))}")
-        # print(f"Temp {((word_length- ((length_needed-len(self.bytes_array))))%word_length)}")
-        # print(f"What is left to 32 bits is {(word_length- (((length_needed)-len(self.bytes_array))%word_length))}")
-
         extend_to_number =((length_needed)-len(self.bytes_array))+((word_length- ((length_needed-len(self.bytes_array))))%word_length)
-        
         self.bytes_array.extend(bytearray(extend_to_number))
 
 

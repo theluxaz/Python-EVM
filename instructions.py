@@ -41,7 +41,7 @@ class Instructions:
     def STOP(self):
         print("Execution stopped")
         self.executor.stopped = True
-        return "STOPPED"
+        return False
 
 
 
@@ -91,10 +91,7 @@ class Instructions:
         a = self.stack.pop_int()
         b = self.stack.pop_int()
 
-        print()
-        print(f"Unsign {a}")
         num = unsigned_to_signed(a)
-        print(f"Signed {num}")
         den = unsigned_to_signed(b)
 
         
@@ -392,9 +389,10 @@ class Instructions:
     #31         100 hot 3200 cold  dynamic  
     def BALANCE(self):
         #Checks the balance of given address
-        address = self.stack.pop_int()
+        address = self.stack.pop_bytes()
         external_contracts = self.executor.execution_context.external_contracts
         if(address):
+            address = address.hex()
             if(external_contracts.get(address) and external_contracts[address].get("balance")):
                 return self.stack.push_int(external_contracts[address]["balance"])
             else:
@@ -486,9 +484,10 @@ class Instructions:
     #3B         100 dynamic  
     def EXTCODESIZE(self):
         #Get size of an account’s code
-        address = self.stack.pop_int()
+        address = self.stack.pop_bytes()
         external_contracts = self.executor.execution_context.external_contracts
         if(address):
+            address = address.hex()
             if(external_contracts.get(address) and external_contracts[address].get("bytecode")):
                 return self.stack.push_int(len(bytearray.fromhex(external_contracts[address]["bytecode"])))
             else:
@@ -501,15 +500,13 @@ class Instructions:
     def EXTCODECOPY(self):
         #Copy an account’s code to memory
         #(self,addressbytes,dest_offset:int, offset:int,size:int)
-        address = self.stack.pop_int()
+        address = self.stack.pop_bytes()
         mem_offset = self.stack.pop_int()
         bytecode_offset = self.stack.pop_int()
         size = self.stack.pop_int()
         external_contracts = self.executor.execution_context.external_contracts
-        # print(f"external code data 2 is {external_contracts.items()}")
-        # print(f"external code LEN 2 is {len(external_contracts.items())}")
-        # print(f"external code data 2 is {external_contracts[address]}")
         if(address):
+            address = address.hex()
             if(external_contracts.get(address) and external_contracts[address].get("bytecode")):
                 return self.memory.store(mem_offset,bytearray.fromhex(external_contracts[address]["bytecode"][bytecode_offset : bytecode_offset + size]))
             else:
@@ -523,7 +520,6 @@ class Instructions:
     def RETURNDATASIZE(self) -> int:
         #Get size of output data from the previous call from the current environment
         result =self.executor.contract_instance.get_return_data()
-        print(f"Printing return DATA : {result} -----------------------------")
         if(result):
             result = len(result)
             return self.stack.push_int(result)
@@ -539,19 +535,21 @@ class Instructions:
         return_data_offset = self.stack.pop_int()
         data_size = self.stack.pop_int()
         
-        result =self.executor.contract_instance.get_return_data()[return_data_offset : return_data_offset + data_size]
-        
-        return self.memory.store(mem_offset,result)
+        return_data = self.executor.contract_instance.get_return_data()
+        if(return_data):     
+            result =self.executor.contract_instance.get_return_data()[return_data_offset : return_data_offset + data_size]
+            return self.memory.store(mem_offset,result)
+        #IF THERE IS NO RETURN DATA IN THIS CONTEXT ???
 
     #OPCODE     GAS
     #3F         100 dynamic  
     def EXTCODEHASH(self):
         #Get hash of an account’s code
-        address = self.stack.pop_int()
+        address = self.stack.pop_bytes()
         external_contracts = self.executor.execution_context.external_contracts
         if(address):
+            address = address.hex()
             if(external_contracts.get(address) and external_contracts[address].get("bytecode")):
-                print(f"To be hashed data {external_contracts[address]['bytecode']}")
                 hashed_value = keccak(bytearray.fromhex(external_contracts[address]["bytecode"]))
                 return self.stack.push_bytes(hashed_value)
             else:
@@ -664,12 +662,6 @@ class Instructions:
         value = self.stack.pop_int()
 
         processed_value = value.to_bytes(32, 'big')
-        
-        print(f"Normal value {value}")
-        # length = len(value) % 32
-        # if length > 0:
-        #     value += bytes(32 - length)
-        print(f"Processed value {processed_value}")
 
         return self.memory.store(offset,processed_value)
 
@@ -717,21 +709,18 @@ class Instructions:
     def JUMP(self):
         #Alter the program counter
         offset = self.stack.pop_int()
-        print(f"JUMPDEST {offset}")
         next_opcode = self.executor.check_opcode_at_pc(offset)
-        print(f"NEXT OPCODE {next_opcode}")
         
         valid = self.executor.is_opcode_valid(offset)
         
         if(next_opcode and valid and next_opcode["name"]== "JUMPDEST"):
             self.executor.set_pc(offset)
-            print("good destination")
             return offset
         else:
-            print("Revert")
+            print("REVERTING")
             print("INVALID JUMP LOCATION")
             self.executor.reverted = True
-            return "REVERT"
+            return False
 
 
     #OPCODE     GAS
@@ -740,18 +729,16 @@ class Instructions:
         #Conditionally alter the program counter
         offset = self.stack.pop_int()
         condition = self.stack.pop_int()
-        print(f"JUMPDEST {offset}")
         next_opcode = self.executor.check_opcode_at_pc(offset)
-        print(f"NEXT OPCODE {next_opcode}")
         if(condition):
             if(next_opcode and next_opcode["name"]== "JUMPDEST"):
                 self.executor.set_pc(offset)
-                print("good destination")
                 return offset
             else:
-                print("Revert")
+                print("REVERTING")
+                print("INVALID JUMP LOCATION")
                 self.executor.reverted = True
-                return "REVERT"
+                return False
         else:
             print("Jumping condition failed")
             return None
@@ -1321,15 +1308,24 @@ class Instructions:
         mem_offset = self.stack.pop_int()
         size = self.stack.pop_int()
         
+        external_contracts = self.executor.execution_context.external_contracts
+        this_address = self.executor.address.hex()
+        #CHECK IF VALUE IS SUFFICIENT
+        if(value > external_contracts[this_address].get("balance") ):
+            #NOT ENOUGH BALANCE TO TRANSFER
+            print("Not enough balance to transfer.")
+            self.executor.reverted = True
+            return False
+        
         bytecode_data = self.memory.load(mem_offset,size)
         
-        print(f"bytecode_data is {bytecode_data}")
+        # print(f"bytecode_data is {bytecode_data}")
         (result,success) = self.executor.contract_instance.create(value,bytecode_data)
-        print("EXTERNAL CODE RESULT")
-        print("\V/")
-        print(result)
-        print(success)
-        print("")
+        # print("EXTERNAL CODE RESULT")
+        # print("\V/")
+        # print(result)
+        # print(success)
+        # print("")
         if(result and success):
             return self.stack.push_bytes(result)
         else:
@@ -1344,7 +1340,7 @@ class Instructions:
         #Message-call into an account
                 
         gas = self.stack.pop_int()
-        address = self.stack.pop_int()
+        address = self.stack.pop_bytes()
         value = self.stack.pop_int()
         argsOffset = self.stack.pop_int()
         argsSize = self.stack.pop_int()
@@ -1354,15 +1350,19 @@ class Instructions:
         #ONLY ALLOWED IN NON STATIC CONTEXT
         if(self.executor.static and value > 0):
             return self.INVALID()
+        
+        external_contracts = self.executor.execution_context.external_contracts
+        this_address = self.executor.address.hex()
+        #CHECK IF VALUE IS SUFFICIENT
+        if(value > external_contracts[this_address].get("balance") ):
+            #NOT ENOUGH BALANCE TO TRANSFER
+            print("Not enough balance to transfer.")
+            self.executor.reverted = True
+            return False
                 
         calldata = self.memory.load(argsOffset,argsSize)
-        print(f"Calldata is {calldata}")
-        (result,success) = self.executor.contract_instance.call(gas,address,value,calldata.hex())
-        print("EXTERNAL CODE RESULT")
-        print("\V/")
-        print(result)
-        print(success)
-        print("")
+        (result,success) = self.executor.contract_instance.call(gas,address.hex(),value,calldata.hex())
+
         if(result):
             processed_value = result.to_bytes(retSize, 'big') if type(result) == int else result[:retSize]
             self.memory.store(retOffset,processed_value)
@@ -1381,22 +1381,28 @@ class Instructions:
         #Almost same as delegate call
         #Message-call into this account with an alternative account’s code, but changing value, storage stays
         gas = self.stack.pop_int()
-        address = self.stack.pop_int()
+        address = self.stack.pop_bytes()
         value = self.stack.pop_int()
         argsOffset = self.stack.pop_int()
         argsSize = self.stack.pop_int()
         retOffset = self.stack.pop_int()
         retSize = self.stack.pop_int()
+    
+        #ONLY ALLOWED IN NON STATIC CONTEXT
+        if(self.executor.static and value > 0):
+            return self.INVALID()
+            
+        external_contracts = self.executor.execution_context.external_contracts
+        this_address = self.executor.address.hex()
+        #CHECK IF VALUE IS SUFFICIENT
+        if(value > external_contracts[this_address].get("balance") ):
+            #NOT ENOUGH BALANCE TO TRANSFER
+            print("Not enough balance to transfer.")
+            self.executor.reverted = True
+            return False
         
-        calldata = self.memory.load(argsOffset,argsSize)
-        print(f"Calldata is {calldata}")
-        
-        (result,success) = self.executor.contract_instance.call_code(gas,address,value,calldata.hex(),self.storage)
-        print("EXTERNAL CALLCODE RESULT")
-        print("\V/")
-        print(result)
-        print(success)
-        print("")
+        calldata = self.memory.load(argsOffset,argsSize)      
+        (result,success) = self.executor.contract_instance.call_code(gas,address.hex(),value,calldata.hex(),self.storage)
         
         if(result):
             processed_value = result.to_bytes(retSize, 'big') if type(result) == int else result[:retSize]
@@ -1425,21 +1431,14 @@ class Instructions:
         #gas:int,address:bytes,args_offset:bytes,args_size:int,ret_offset:bytes,ret_size:int
         #Message-call into this account with an alternative account’s code, but persisting the current values for sender and value, storage stays
         gas = self.stack.pop_int()
-        address = self.stack.pop_int()
+        address = self.stack.pop_bytes()
         argsOffset = self.stack.pop_int()
         argsSize = self.stack.pop_int()
         retOffset = self.stack.pop_int()
         retSize = self.stack.pop_int()
         
-        calldata = self.memory.load(argsOffset,argsSize)
-        print(f"Calldata is {calldata}")
-        
-        (result,success) = self.executor.contract_instance.delegate_call(gas,address,calldata.hex(),self.storage)
-        print("EXTERNAL DELEGATE CODE RESULT")
-        print("\V/")
-        print(result)
-        print(success)
-        print("")
+        calldata = self.memory.load(argsOffset,argsSize)       
+        (result,success) = self.executor.contract_instance.delegate_call(gas,address.hex(),calldata.hex(),self.storage)
         
         if(result):
             processed_value = result.to_bytes(retSize, 'big') if type(result) == int else result[:retSize]
@@ -1469,15 +1468,19 @@ class Instructions:
         size = self.stack.pop_int()
         salt = self.stack.pop_bytes()
         
+        external_contracts = self.executor.execution_context.external_contracts
+        this_address = self.executor.address.hex()
+        #CHECK IF VALUE IS SUFFICIENT
+        if(value > external_contracts[this_address].get("balance") ):
+            #NOT ENOUGH BALANCE TO TRANSFER
+            print("Not enough balance to transfer.")
+            self.executor.reverted = True
+            return False
+        
         bytecode_data = self.memory.load(mem_offset,size)
         
-        print(f"bytecode_data is {bytecode_data}")
         (result,success) = self.executor.contract_instance.create2(value,bytecode_data,salt)
-        print("EXTERNAL CODE RESULT")
-        print("\V/")
-        print(result)
-        print(success)
-        print("")
+        
         if(result and success):
             return self.stack.push_bytes(result)
         else:
@@ -1490,7 +1493,7 @@ class Instructions:
         #Static message-call into an account
         
         gas = self.stack.pop_int()
-        address = self.stack.pop_int()
+        address = self.stack.pop_bytes()
         argsOffset = self.stack.pop_int()#offset in memory of calldata 
         argsSize = self.stack.pop_int()#size in memory of calldata 
         retOffset = self.stack.pop_int()#offset in memory of calldata 
@@ -1498,14 +1501,9 @@ class Instructions:
         
                 
         calldata = self.memory.load(argsOffset,argsSize)
-        print(f"Calldata is {calldata}")
         
-        (result,success) = self.executor.contract_instance.static_call(gas,address,calldata.hex())
-        print("EXTERNAL CODE RESULT")
-        print("\V/")
-        print(result)
-        print(success)
-        print("")
+        (result,success) = self.executor.contract_instance.static_call(gas,address.hex(),calldata.hex())
+
         if(result):
             processed_value = result.to_bytes(retSize, 'big') if type(result) == int else result[:retSize]
             self.memory.store(retOffset,processed_value)
@@ -1533,7 +1531,7 @@ class Instructions:
     def INVALID(self):
         #Designated invalid instruction
         self.executor.invalid = True
-        return "INVALID"
+        return False
 
     #OPCODE     GAS
     #FF         5000 dynamic   
@@ -1543,14 +1541,11 @@ class Instructions:
         if(self.executor.static):
             return self.INVALID()
         
-        address = self.stack.pop_int()
-        
+        address = self.stack.pop_bytes()
+        address = address.hex()
         #Send balance
         external_contracts = self.executor.execution_context.external_contracts 
-        to_address = int.from_bytes(self.executor.address, byteorder="big")
-        print("address")
-        print(address)
-        print(to_address)
+        to_address = self.executor.address.hex()
     
         if(external_contracts.get(address) and external_contracts[address].get("balance")):
             external_contracts[address]["balance"] = external_contracts[address]["balance"] + external_contracts[to_address]["balance"] 
@@ -1560,4 +1555,4 @@ class Instructions:
         del external_contracts[to_address]
         #SUCCESSFULLY DELETED CONTRACT
         return None 
-        
+    
