@@ -57,8 +57,8 @@ To do later.
 - [x] Stack
 - [x] Memory
 - [x] Storage
-- [ ] Gas (Static gas completed.)
-- [ ] System     
+- [x] Gas (Static)
+- [x] System     
 - [x] Testing
 <br/>
 
@@ -74,8 +74,8 @@ To do later.
 - [x] Duplication Operations
 - [x] Exchange Operations
 - [x] Logging Operations
-- [ ] System operations
-- [ ] Halt Execution, Mark for deletion Operations
+- [x] System operations
+- [x] Halt Execution, Mark for deletion Operations
 
 
 <!-- DAILY -->
@@ -101,7 +101,6 @@ Added functionality for ADDRESS and BALANCE. Added logging opcodes such as LOG0.
 
 ### Day 7: (July 15)
 Added functionality for testing opcodes from evm-from-scratch-challenge resources https://github.com/w1nt3r-eth/evm-from-scratch. Adjusted Executor to work with multiple contexts. Fixed errors present in certain opcode implementations.
-
 
 ### Day 8: (July 16)
 Added many more opcodes which needed major refactoring, such as CALL, DELEGATECALL, RETURNDATACOPY etc. Reworked context nesting and reverting. Tested and fixed most implemented opcodes.
