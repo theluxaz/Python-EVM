@@ -5,11 +5,6 @@ from storage import Storage
 from utils import signed_to_unsigned,unsigned_to_signed
 from eth_hash.auto import keccak
 
-# from execution_context import ExecutionContext
-# from transaction_context import TransactionContext
-# from external_contract import ExternalContract
-# from contract_instance import ContractInstance
-
 max_value = 2**256 - 1
 max_ceiling = 2**256 
 
@@ -18,11 +13,10 @@ class Instructions:
     def __init__(self,executor:object,storage:Optional[dict]) -> None:
         self.stack = Stack()
         self.memory = Memory()
-        print(f"INSTRUCTIONS STORAGE {storage}")
         if storage :
             self.storage = Storage(storage=storage)
         else:
-            print("INITIALIZING STORAGE ----------------===================================")
+            print("INITIALIZING STORAGE ---------------------------------------")
             self.storage = Storage()
         self.executor = executor
 
@@ -43,7 +37,7 @@ class Instructions:
     def STOP(self):
         print("Execution stopped")
         self.executor.stopped = True
-        return False
+        return "STOPPED"
 
 
 
@@ -52,43 +46,38 @@ class Instructions:
     #OPCODE     GAS
     #01         3  
     def ADD(self) -> int:
-        #(a:int, b:int)
         a = self.stack.pop_int()
         b = self.stack.pop_int()
-        return self.stack.push_int((a+b) & max_value) #possibly add this on this line  & max_value
+        return self.stack.push_int((a+b) & max_value)
 
     #OPCODE     GAS
     #02         5  
     def MUL(self) -> int:
-        #(a:int, b:int)
         a = self.stack.pop_int()
         b = self.stack.pop_int()
-        return self.stack.push_int((a*b) & max_value) #possibly add this on this line  & max_value
+        return self.stack.push_int((a*b) & max_value)
 
     #OPCODE     GAS
     #03         3  
     def SUB(self) -> int:
-        #(a:int, b:int)
         a = self.stack.pop_int()
         b = self.stack.pop_int()
-        return self.stack.push_int((a-b) & max_value) #possibly add this on this line  & max_value
+        return self.stack.push_int((a-b) & max_value)
 
     #OPCODE     GAS
     #04         2  
     def DIV(self) -> int:
-        #(a:int, b:int)
         num = self.stack.pop_int()
         den = self.stack.pop_int()
 
         if den == 0:
             return self.stack.push_int(0)
         else:
-            return self.stack.push_int((num//den) & max_value) #possibly add this on this line  & max_value
+            return self.stack.push_int((num//den) & max_value)
 
     #OPCODE     GAS
     #05         5  
     def SDIV(self) -> int:
-        #(a:int, b:int)
         #SIGNED INTEGER DIVISION
         a = self.stack.pop_int()
         b = self.stack.pop_int()
@@ -103,12 +92,11 @@ class Instructions:
             result = 0
         else:
             result = (pos_or_neg * (abs(num) // abs(den))) 
-        return self.stack.push_int(signed_to_unsigned(result)) #possibly add this on this line  & max_value
+        return self.stack.push_int(signed_to_unsigned(result)) 
 
     #OPCODE     GAS
     #06         5  
     def MOD(self) -> int:
-        #(a:int, b:int)
         a = self.stack.pop_int()
         b = self.stack.pop_int()
 
@@ -120,7 +108,6 @@ class Instructions:
     #OPCODE     GAS
     #07         5  
     def SMOD(self) -> int:
-        #(a:int, b:int)
         #SIGNED MODULUS
         a = self.stack.pop_int()
         b = self.stack.pop_int()
@@ -133,7 +120,7 @@ class Instructions:
         if mod == 0:
             result = 0
         else:
-            result = (abs(val) % abs(mod) * pos_or_neg) #possibly add this on this line  & max_value
+            result = (abs(val) % abs(mod) * pos_or_neg)
 
         return self.stack.push_int(signed_to_unsigned(result))
 
@@ -141,7 +128,6 @@ class Instructions:
     #OPCODE     GAS
     #08         8  
     def ADDMOD(self) -> int:
-        #(a:int, b:int, n:int
         #ADD TWO VALUES, THEN MODULUS
         a = self.stack.pop_int()
         b = self.stack.pop_int()
@@ -155,7 +141,6 @@ class Instructions:
     #OPCODE     GAS
     #09         8  
     def MULMOD(self) -> int:
-        #(a:int, b:int, n:int
         #MULTIPLY TWO VALUES, THEN MODULUS
         a = self.stack.pop_int()
         b = self.stack.pop_int()
@@ -169,7 +154,6 @@ class Instructions:
     #OPCODE     GAS
     #0A         10   dynamic  
     def EXP(self) -> int:
-        #(a:int (base), exponent:int
         #EXPONENT
         a = self.stack.pop_int()
         exponent = self.stack.pop_int()
@@ -187,11 +171,8 @@ class Instructions:
     #OPCODE     GAS
     #0B         5  
     def SIGNEXTEND(self) -> int:
-        #(b:int (bits), x:int (value)
         #Extend length of two’s complement signed integer
-
         #official implementation
-
         b = self.stack.pop_int()
         x = self.stack.pop_int()
 
@@ -290,7 +271,6 @@ class Instructions:
     #19         3  
     def NOT(self) -> bytearray: #TODO figure out return type
         #BITWISE NOT
-        #OR TRY
         item1 = self.stack.pop_int()
         return self.stack.push_int(max_value- item1)
         
@@ -299,7 +279,6 @@ class Instructions:
     #1A         3  
     def BYTE(self)  -> int:
         #offset and byte value
-        #(i:int (position),x:bytes (value))
         #RETRIEVE SINGLE BYTE FROM WORD
         pos = self.stack.pop_int()
         val = self.stack.pop_int()
@@ -314,7 +293,6 @@ class Instructions:
     #OPCODE     GAS
     #1B         3  
     def SHL(self)  -> bytes:
-        #(shift:int (bits),value:bytes(value))
         #SHIFT shift VALUE value to the LEFT
         shift = self.stack.pop_int()
         val = self.stack.pop_int()
@@ -326,7 +304,6 @@ class Instructions:
     #OPCODE     GAS
     #1C         3  
     def SHR(self) -> bytes:
-        #(shift:int (bits),value:bytes(value))
         #SHIFT shift VALUE value to the RIGHT
         shift = self.stack.pop_int()
         val = self.stack.pop_int()
@@ -340,8 +317,7 @@ class Instructions:
     #OPCODE     GAS
     #1D         3  
     def SAR(self)  -> bytes:
-        #SHIFT shift VALUE value to the RIGHT
-        #(shift:int,value:bytes) --- IS SIGNED, similar to previous
+        #SHIFT shift VALUE value to the RIGHT --- IS SIGNED, similar to previous
         #Shift the bits towards the least significant one. The bits moved before the first one are discarded, 
         #the new bits are set to 0 if the previous most significant bit was 0, otherwise the new bits are set to 1.
         shift = self.stack.pop_int()
@@ -360,7 +336,6 @@ class Instructions:
 
 
 
-    # Test more, not too sure if correct
     #Sha3 Hashing Operations
 
     #OPCODE     GAS
@@ -396,8 +371,6 @@ class Instructions:
         
         if(address):
             address = address.hex()
-            print(f"EVM ADDRESS {address}")
-            print(f"EVM VALUE {EVM_STATE.get(address)}")
             if(EVM_STATE.get(address)):
                 return self.stack.push_int(EVM_STATE.get(address)["balance"])
             else:
@@ -438,8 +411,6 @@ class Instructions:
             extend_to_number =((length_needed)-len(calldata))+((word_length- ((length_needed-len(calldata))))%word_length)
             calldata.extend(bytearray(extend_to_number))
             
-        #DELETES TRAILING ZEROES
-        #TODO remove possibly
         processed_data = int.from_bytes(calldata[offset : offset + word_length]).to_bytes((int.from_bytes(calldata[offset : offset + word_length]).bit_length() + 7) // 8, byteorder = 'big')
         return self.stack.push_bytes(processed_data)
 
@@ -455,7 +426,6 @@ class Instructions:
     #37         3 dynamic
     def CALLDATACOPY(self):
         #Copy input data in calldata to memory
-        #(self,dest_offset:int, offset:int,size:int)
         mem_offset = self.stack.pop_int()
         calldata_offset = self.stack.pop_int()
         size = self.stack.pop_int()
@@ -472,10 +442,10 @@ class Instructions:
     #39         3 dynamic
     def CODECOPY(self):
         #Copy code running in current environment to memory
-        #(self,dest_offset:int, offset:int,size:int)
         mem_offset = self.stack.pop_int()
         bytecode_offset = self.stack.pop_int()
         size = self.stack.pop_int()
+        
         return self.memory.store(mem_offset,self.executor.bytecode[bytecode_offset : bytecode_offset + size])
         
 
@@ -490,12 +460,11 @@ class Instructions:
     def EXTCODESIZE(self):
         #Get size of an account’s code
         address = self.stack.pop_bytes()
+        
         EVM_STATE = self.executor.EVM_STATE
         if(address):
             address = address.hex()
             if(EVM_STATE.get(address) ):
-                print(f"EVM ADDRESS {address}")
-                print(f"EVM VALUE {EVM_STATE.get(address)}")
                 return self.stack.push_int(len(bytearray.fromhex(EVM_STATE.get(address)["bytecode"])))
             else:
                 return self.stack.push_int(0)
@@ -506,11 +475,11 @@ class Instructions:
     #3C         100 dynamic  
     def EXTCODECOPY(self):
         #Copy an account’s code to memory
-        #(self,addressbytes,dest_offset:int, offset:int,size:int)
         address = self.stack.pop_bytes()
         mem_offset = self.stack.pop_int()
         bytecode_offset = self.stack.pop_int()
         size = self.stack.pop_int()
+        
         EVM_STATE = self.executor.EVM_STATE
         if(address):
             address = address.hex()
@@ -546,13 +515,14 @@ class Instructions:
         if(return_data):     
             result =self.executor.contract_instance.get_return_data()[return_data_offset : return_data_offset + data_size]
             return self.memory.store(mem_offset,result)
-        #IF THERE IS NO RETURN DATA IN THIS CONTEXT ???
+        #NOTE WHAT IF THERE IS NO RETURN DATA IN THIS CONTEXT ???
 
     #OPCODE     GAS
     #3F         100 dynamic  
     def EXTCODEHASH(self):
         #Get hash of an account’s code
         address = self.stack.pop_bytes()
+        
         EVM_STATE = self.executor.EVM_STATE
         if(address):
             address = address.hex()
@@ -654,13 +624,10 @@ class Instructions:
         size=32
         loaded_data = self.memory.load(offset,size)
 
-        #DELETES TRAILING ZEROES
-        #TODO remove possibly
         processed_data = int.from_bytes(loaded_data).to_bytes((int.from_bytes(loaded_data).bit_length() + 7) // 8, byteorder = 'big')
         
         return self.stack.push_bytes(processed_data)
 
-    #TODO - STORE BYTES OR INT IN STACK?? CHECK CONVERSION FROM BYTES with .to_bytes
     #OPCODE     GAS
     #52         3 dynamic    
     def MSTORE(self):
@@ -672,7 +639,6 @@ class Instructions:
 
         return self.memory.store(offset,processed_value)
 
-    #TODO add validation!!!
     #OPCODE     GAS
     #53         3 dynamic    
     def MSTORE8(self):
@@ -687,26 +653,22 @@ class Instructions:
     def SLOAD(self) -> int:
         #Load word from storage
         key = self.stack.pop_int()
-
-        # processed_key = key.to_bytes(32, 'big')
+        
         result = self.storage.load(key)
         if(result):
             return self.stack.push_int(result)
         else:
             return self.stack.push_int(0)
+        
     #OPCODE     GAS
     #55         100 dynamic  
     def SSTORE(self):
         #Save word to storage
-        
         if(self.executor.static):
             return self.INVALID()
         
         key = self.stack.pop_int()
         value = self.stack.pop_int()
-        #delete later
-        # processed_key = key.to_bytes(32, 'big')
-        # processed_value = value.to_bytes(32, 'big')
 
         return self.storage.store(key,value)
 
@@ -719,7 +681,6 @@ class Instructions:
         next_opcode = self.executor.check_opcode_at_pc(offset)
         
         valid = self.executor.is_opcode_valid(offset)
-        
         if(next_opcode and valid and next_opcode["name"]== "JUMPDEST"):
             self.executor.set_pc(offset)
             return offset
@@ -727,7 +688,7 @@ class Instructions:
             print("REVERTING")
             print("INVALID JUMP LOCATION")
             self.executor.reverted = True
-            return False
+            return "INVALID JUMP LOCATION"
 
 
     #OPCODE     GAS
@@ -745,7 +706,7 @@ class Instructions:
                 print("REVERTING")
                 print("INVALID JUMP LOCATION")
                 self.executor.reverted = True
-                return False
+                return "INVALID JUMP LOCATION"
         else:
             print("Jumping condition failed")
             return None
@@ -1107,91 +1068,91 @@ class Instructions:
 
     #OPCODE     GAS
     #91         3   
-    def SWAP2(self):# ignored return types in the middle DO LATER
+    def SWAP2(self):
         #Exchange 1st and 3rd stack items 
         return self.stack.swap(2)
 
     #OPCODE     GAS
     #92         3   
-    def SWAP3(self):# ignored return types in the middle DO LATER
+    def SWAP3(self):
         #Exchange 1st and 4th stack items
         return self.stack.swap(3)
 
     #OPCODE     GAS
     #93         3   
-    def SWAP4(self):# ignored return types in the middle DO LATER
+    def SWAP4(self):
         #Exchange 1st and 5th stack items
         return self.stack.swap(4)
 
     #OPCODE     GAS
     #94         3   
-    def SWAP5(self):# ignored return types in the middle DO LATER
+    def SWAP5(self):
         #Exchange 1st and 6th stack items
         return self.stack.swap(5)
 
     #OPCODE     GAS
     #95         3   
-    def SWAP6(self):# ignored return types in the middle DO LATER
+    def SWAP6(self):
         #Exchange 1st and 7th stack items
         return self.stack.swap(6)
 
     #OPCODE     GAS
     #96         3   
-    def SWAP7(self):# ignored return types in the middle DO LATER
+    def SWAP7(self):
         #Exchange 1st and 8th stack items
         return self.stack.swap(7)
 
     #OPCODE     GAS
     #97         3   
-    def SWAP8(self):# ignored return types in the middle DO LATER
+    def SWAP8(self):
         #Exchange 1st and 9th stack items
         return self.stack.swap(8)
 
     #OPCODE     GAS
     #98         3   
-    def SWAP9(self):# ignored return types in the middle DO LATER
+    def SWAP9(self):
         #Exchange 1st and 10th stack items
         return self.stack.swap(9)
 
     #OPCODE     GAS
     #99         3   
-    def SWAP10(self):# ignored return types in the middle DO LATER
+    def SWAP10(self):
         #Exchange 1st and 11th stack items
         return self.stack.swap(10)
 
     #OPCODE     GAS
     #9A         3   
-    def SWAP11(self):# ignored return types in the middle DO LATER
+    def SWAP11(self):
         #Exchange 1st and 12th stack items
         return self.stack.swap(11)
 
     #OPCODE     GAS
     #9B         3   
-    def SWAP12(self):# ignored return types in the middle DO LATER
+    def SWAP12(self):
         #Exchange 1st and 13th stack items
         return self.stack.swap(12)
 
     #OPCODE     GAS
     #9C         3   
-    def SWAP13(self):# ignored return types in the middle DO LATER
+    def SWAP13(self):
         #Exchange 1st and 14th stack items
         return self.stack.swap(13)
 
     #OPCODE     GAS
     #9D         3   
-    def SWAP14(self):# ignored return types in the middle DO LATER
+    def SWAP14(self):
         #Exchange 1st and 15th stack items
         return self.stack.swap(14)
 
     #OPCODE     GAS
     #9E         3   
-    def SWAP15(self):# ignored return types in the middle DO LATER
+    def SWAP15(self):
         #Exchange 1st and 16th stack items
         return self.stack.swap(15)
 
     #OPCODE     GAS
     #9F         3   
-    def SWAP16(self):# ignored return types in the middle DO LATER
+    def SWAP16(self):
         #Exchange 1st and 17th stack items
         return self.stack.swap(16)
 
@@ -1306,7 +1267,6 @@ class Instructions:
     #F0         32000 dynamic   
     def CREATE(self) -> bytes:
         #Create a new account with associated code
-        
         #ONLY ALLOWED IN NON STATIC CONTEXT
         if(self.executor.static):
             return self.INVALID()
@@ -1322,18 +1282,13 @@ class Instructions:
             #NOT ENOUGH BALANCE TO TRANSFER
             print("Not enough balance to transfer.")
             self.executor.reverted = True
-            return False
+            return "NOT ENOUGH BALANCE"
         
         bytecode_data = self.memory.load(mem_offset,size)
         
-        # print(f"bytecode_data is {bytecode_data}")
         (result,success) = self.executor.contract_instance.create(value,bytecode_data)
-        # print("EXTERNAL CODE RESULT")
-        # print("\V/")
-        # print(result)
-        # print(success)
-        # print("")
-        if(result and success):
+
+        if(result and type(result) != str and success):
             return self.stack.push_bytes(result)
         else:
             return self.stack.push_int(0)
@@ -1343,7 +1298,6 @@ class Instructions:
     #OPCODE     GAS
     #F1         100 dynamic   
     def CALL(self) -> int:
-        #gas:int,address:bytes,value:int,args_offset:bytes,args_size:int,ret_offset:bytes,ret_size:int
         #Message-call into an account
                 
         gas = self.stack.pop_int()
@@ -1370,7 +1324,7 @@ class Instructions:
         calldata = self.memory.load(argsOffset,argsSize)
         (result,success) = self.executor.contract_instance.call(gas,address.hex(),value,calldata.hex())
 
-        if(result):
+        if(result and type(result) != str):
             processed_value = result.to_bytes(retSize, 'big') if type(result) == int else result[:retSize]
             self.memory.store(retOffset,processed_value)
             if(success):
@@ -1384,7 +1338,6 @@ class Instructions:
     #OPCODE     GAS
     #F2         100 dynamic     
     def CALLCODE(self):
-        #gas:int,address:bytes,value:int,args_offset:bytes,args_size:int,ret_offset:bytes,ret_size:int
         #Almost same as delegate call
         #Message-call into this account with an alternative account’s code, but changing value, storage stays
         gas = self.stack.pop_int()
@@ -1406,12 +1359,12 @@ class Instructions:
             #NOT ENOUGH BALANCE TO TRANSFER
             print("Not enough balance to transfer.")
             self.executor.reverted = True
-            return False
+            return "NOT ENOUGH BALANCE"
         
         calldata = self.memory.load(argsOffset,argsSize)      
-        (result,success) = self.executor.contract_instance.call_code(gas,address.hex(),value,calldata.hex(),self.storage)
+        (result,success) = self.executor.contract_instance.call_code(gas,address.hex(),value,calldata.hex())
         
-        if(result):
+        if(result and type(result) != str):
             processed_value = result.to_bytes(retSize, 'big') if type(result) == int else result[:retSize]
             self.memory.store(retOffset,processed_value)
             if(success):
@@ -1435,7 +1388,6 @@ class Instructions:
     #OPCODE     GAS
     #F4         100 dynamic     
     def DELEGATECALL(self):
-        #gas:int,address:bytes,args_offset:bytes,args_size:int,ret_offset:bytes,ret_size:int
         #Message-call into this account with an alternative account’s code, but persisting the current values for sender and value, storage stays
         gas = self.stack.pop_int()
         address = self.stack.pop_bytes()
@@ -1445,9 +1397,9 @@ class Instructions:
         retSize = self.stack.pop_int()
         
         calldata = self.memory.load(argsOffset,argsSize)       
-        (result,success) = self.executor.contract_instance.delegate_call(gas,address.hex(),calldata.hex(),self.storage)
+        (result,success) = self.executor.contract_instance.delegate_call(gas,address.hex(),calldata.hex())
         
-        if(result):
+        if(result and type(result) != str):
             processed_value = result.to_bytes(retSize, 'big') if type(result) == int else result[:retSize]
             self.memory.store(retOffset,processed_value)
             if(success):
@@ -1463,7 +1415,6 @@ class Instructions:
     #OPCODE     GAS
     #F5         32000 dynamic     
     def CREATE2(self) -> bytes:
-        #value:int,offset:bytes,size:int,salt:bytes
         #Create a new account with associated code at a predictable address
         
         #ONLY ALLOWED IN NON STATIC CONTEXT
@@ -1482,36 +1433,33 @@ class Instructions:
             #NOT ENOUGH BALANCE TO TRANSFER
             print("Not enough balance to transfer.")
             self.executor.reverted = True
-            return False
+            return "NOT ENOUGH BALANCE"
         
         bytecode_data = self.memory.load(mem_offset,size)
         
         (result,success) = self.executor.contract_instance.create2(value,bytecode_data,salt)
         
-        if(result and success):
+        if(result and type(result) != str and success):
             return self.stack.push_bytes(result)
         else:
             return self.stack.push_int(0)
 
     #OPCODE     GAS
     #FA         100 dynamic     
-    def STATICCALL(self) -> int:
-       #gas:int,address:bytes,value:int,args_offset:bytes,args_size:int,ret_offset:bytes,ret_size:int
+    def STATICCALL(self):
         #Static message-call into an account
-        
         gas = self.stack.pop_int()
         address = self.stack.pop_bytes()
         argsOffset = self.stack.pop_int()#offset in memory of calldata 
         argsSize = self.stack.pop_int()#size in memory of calldata 
         retOffset = self.stack.pop_int()#offset in memory of calldata 
         retSize = self.stack.pop_int()#size in memory of calldata 
-        
                 
         calldata = self.memory.load(argsOffset,argsSize)
         
         (result,success) = self.executor.contract_instance.static_call(gas,address.hex(),calldata.hex())
 
-        if(result):
+        if(result and type(result) != str):
             processed_value = result.to_bytes(retSize, 'big') if type(result) == int else result[:retSize]
             self.memory.store(retOffset,processed_value)
             if(success):
@@ -1544,7 +1492,6 @@ class Instructions:
     #FF         5000 dynamic   
     def SELFDESTRUCT(self):
         #Halt execution and register account for later deletion
-        
         if(self.executor.static):
             return self.INVALID()
         

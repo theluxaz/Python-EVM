@@ -12,21 +12,24 @@ def signed_to_unsigned(value: int) -> int:
         return value + (2**256)
     else:
         return value
-    
-def print_deque(stack:deque):
+
+
+def print_deque(stack: deque):
     print("")
-    index = len(stack)-1
+    index = len(stack) - 1
     print("TOP OF THE STACK")
-    while (index >=0):
-        print(f"{index} Item ---> bytes = {str(stack[index].hex())} ,  int = {str(int.from_bytes(stack[index], byteorder='big'))}")
-        index-=1
+    while index >= 0:
+        print(
+            f"{index} Item ---> bytes = {str(stack[index].hex())} ,  int = {str(int.from_bytes(stack[index], byteorder='big'))}"
+        )
+        index -= 1
     print("")
 
-def print_memory(memory:bytearray):
+
+def print_memory(memory: bytearray):
     print("")
-    index=0
-    while (index < len(memory)-1):
+    index = 0
+    while index < len(memory) - 1:
         print(f"Memory location {index} ---> bytes = {memory[index:index+32].hex()} ")
-        # print(f"memory length is {len(memory[index:index+32])}")
-        index+=32
+        index += 32
     print("")

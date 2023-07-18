@@ -1857,7 +1857,7 @@
       },
       "expect": {
         "stack": [
-          "0x9"
+          "0x56BC75E2D63100000"
         ],
         "success": true
       },
@@ -2319,7 +2319,7 @@
       "expect": {
         "stack": [
           "0x0",
-          "0x10"
+          "0x56BC75E2D63100007"
         ],
         "success": true
       }
