@@ -14,6 +14,8 @@ class Memory:
         self.bytes_array = bytearray(0)
 
     def store(self, offset: int, value:bytearray):
+        if(len(self.bytes_array)+word_length > 2**256-1):
+            raise Exception("Maximum memory reached!")
         processed_value = bytearray(value)
         length_needed= offset+word_length
         
@@ -30,7 +32,8 @@ class Memory:
         return processed_value
 
     def store8(self, offset: int, value:bytearray) -> None:
-        
+        if(len(self.bytes_array)+1 > 2**256-1):
+            raise Exception("Maximum memory reached!")
         length_needed= offset+1 
         if(length_needed > len(self.bytes_array)):
             self.expand_memory(length_needed)

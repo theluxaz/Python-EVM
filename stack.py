@@ -15,10 +15,14 @@ class Stack:
         self.stack = deque()
 
     def push_bytes(self,item):
+        if(len(self.stack)+1 > self.max_size):
+            raise Exception("Maximum stack size reached!")
         self.stack.append(item)
         return item
     
     def push_int(self,item):
+        if(len(self.stack)+1 > self.max_size):
+            raise Exception("Maximum stack size reached!")
         item = item.to_bytes((item.bit_length() + 7) // 8, byteorder = 'big')
         self.stack.append(item)
         return item
@@ -33,6 +37,8 @@ class Stack:
     
     #Duplicate
     def duplicate(self,offset:int):
+        if(len(self.stack)+1 > self.max_size):
+            raise Exception("Maximum stack size reached!")
         item = self.stack[len(self.stack) - offset]
         self.stack.append(item)  
         return item

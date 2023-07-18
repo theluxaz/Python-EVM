@@ -16,10 +16,11 @@ The majority of work done was to create a bytecode processing machine that would
 
 1. Install Python 3.8+
 
-2. Install required pip packages ("eth-hash","simple-rlp")
+2. Install required pip packages ("eth-hash","simple-rlp","pickledb")
    ```sh
    pip install eth-hash
    pip install simple-rlp
+   pip install pickledb
    ```
 3. Clone the repo
    ```sh
@@ -108,6 +109,9 @@ Added many more opcodes which needed major refactoring, such as CALL, DELEGATECA
 
 ### Day 9: (July 16)
 Finished all the remaining Opcodes such as CREATE, CREATE2 and SELFDESTRUCT. Made the EVM fully functional and tested. Code cleanup and refactoring needed.
+
+### Day 10: (July 17)
+Finished the project. Added persistence for Storage via "pickledb". Refactored and cleaned up the code. Still more refactoring to be done in the future.
 
 
 <!-- LICENSE -->
