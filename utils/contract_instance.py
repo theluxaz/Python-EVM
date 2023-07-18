@@ -1,7 +1,7 @@
-from execution_context import ExecutionContext
-from transaction_context import TransactionContext
-from executor import Executor
-from state import State
+from context.execution_context import ExecutionContext
+from context.transaction_context import TransactionContext
+from utils.executor import Executor
+from state.state import State
 from eth_hash.auto import keccak
 import rlp
 

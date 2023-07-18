@@ -1,8 +1,8 @@
 from typing import Optional
-from stack import Stack
-from memory import Memory
-from storage import Storage
-from utils import signed_to_unsigned,unsigned_to_signed
+from state.stack import Stack
+from state.memory import Memory
+from state.storage import Storage
+from utils.utils import signed_to_unsigned,unsigned_to_signed
 from eth_hash.auto import keccak
 
 max_value = 2**256 - 1
@@ -16,7 +16,7 @@ class Instructions:
         if storage :
             self.storage = Storage(storage=storage)
         else:
-            print("INITIALIZING STORAGE ---------------------------------------")
+            print("INITIALIZING STORAGE")
             self.storage = Storage()
         self.executor = executor
 

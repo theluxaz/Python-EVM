@@ -1,9 +1,9 @@
 from typing import Optional
 from instructions import Instructions
-from execution_context import ExecutionContext
-from transaction_context import TransactionContext
-from state import State
-from opcode_list import opcodes_list
+from context.execution_context import ExecutionContext
+from context.transaction_context import TransactionContext
+from state.state import State
+from constants.opcode_list import opcodes_list
 
 
 # TODO This file needs heavy refactoring
@@ -52,13 +52,13 @@ class Executor:
             instruction = self.get_next_opcode()
             self.gas_remaining = self.gas_remaining - instruction["gas"]
             if self.pc > len(self.bytecode):
-                print("CODE FINISHED - STOPPING")
+                print("CODE FINISHED - STOPPING ▶️")
                 print()
                 self.finished = True
-                return "EXECUTION FINISHED"
+                return "EXECUTION FINISHED "
             # TODO ADD PROPER GAS ERRORS - ENABLE LATER AFTER TESTING
             elif self.gas_remaining < 0:
-                print("OUT OF GAS - STOPPING")
+                print("OUT OF GAS - STOPPING ❗")
                 print()
                 self.stopped = True
                 return "OUT OF GAS"
@@ -75,11 +75,11 @@ class Executor:
                 return result
             elif self.stopped or self.finished:
                 # TODO IMPLEMENT STOPPED FUNCTIONALITY
-                print("STOPPED PROGRAM")
+                print("STOPPED PROGRAM ❗")
                 return "STOPPED"
             elif self.invalid:
                 # TODO IMPLEMENT INVALID FUNCTIONALITY
-                print("INVALID VALUE STOPPED PROGRAM")
+                print("INVALID VALUE STOPPED PROGRAM ❌")
                 return "INVALID"
 
     def revert_transaction(self):

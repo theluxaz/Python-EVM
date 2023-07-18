@@ -1,5 +1,5 @@
 from collections import deque
-from utils import print_deque
+from utils.utils import print_deque
 
 
 class Stack:

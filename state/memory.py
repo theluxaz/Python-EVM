@@ -1,4 +1,4 @@
-from utils import print_memory
+from utils.utils import print_memory
 
 # 0x51    MLOAD       Load word from memory
 # 0x52    MSTORE      Save word to memory

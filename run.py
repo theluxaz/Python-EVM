@@ -1,10 +1,9 @@
 import json
 import os
-from opcode_list import opcodes_list
-from execution_context import ExecutionContext
-from transaction_context import TransactionContext
-from contract_instance import ContractInstance
-from state import State
+from context.execution_context import ExecutionContext
+from context.transaction_context import TransactionContext
+from utils.contract_instance import ContractInstance
+from state.state import State
 
 
 hexcode = "6006600455600654"
@@ -35,8 +34,6 @@ transaction_context_data = {
 
 
 # TODO This file needs heavy refactoring
-
-
 def main() -> None:
     # Runs code
     bytecode = bytearray.fromhex(hexcode)
@@ -48,7 +45,7 @@ def main() -> None:
     )
     result = contract_instance_main.run_instance(bytecode)
 
-    print("FINISHED EXECUTION")
+    print("FINISHED EXECUTION ✅")
     print()
     if type(result) == int:
         print(f"FINAL result is : int {result}")
@@ -69,7 +66,7 @@ def main_testing(code) -> None:
 
 def test():
     script_dirname = os.path.dirname(os.path.abspath(__file__))
-    json_file = os.path.join(script_dirname, "evm.json")
+    json_file = os.path.join(script_dirname,"constants/" ,"evm.json")
     with open(json_file) as f:
         data = json.load(f)
         total = len(data)
