@@ -35,7 +35,7 @@ The majority of work done was to create a bytecode processing machine that would
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-The main program loop is located at run.py. You can either run the provided EVM test by setting "TESTING = True" 
+The main program loop is located at run.py. You can either run the provided EVM tests by setting "TESTING = True" 
 or insert your own bytecode in hex in "hexcode" variable and set "TESTING" to False.
 
 Please edit the execution context data and transaction data in "run.py" as you see fit for each run. 
@@ -53,7 +53,6 @@ The "ethereum network" state is located in variables EVM_STATE.db and EVM_STATE_
 - [x] Gas (Static)
 - [x] System     
 - [x] Testing
-<br/>
 
 #### Opcodes:
 
@@ -73,12 +72,14 @@ The "ethereum network" state is located in variables EVM_STATE.db and EVM_STATE_
 <!-- FUTURE IMPROVEMENTS -->
 ## Future Improvements
 
-* Add block header history for BLOCKHASH
+* More testing and error handling
+* Add block structure and block header history for BLOCKHASH
 * Blockchain persistence via Merkle Patricia Trie
 * Dynamic Gas
 * Add validation
 * Errors for edge cases
 * Refactor and clean code
+* Nonce rework
 
 <!-- DAILY -->
 ## Daily Progress

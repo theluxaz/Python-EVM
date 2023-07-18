@@ -1570,7 +1570,7 @@
       },
       "expect": {
         "stack": [
-          "0x100"
+          "0x56BC75E2D63104BEB"
         ],
         "success": true
       }

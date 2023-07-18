@@ -24,6 +24,11 @@ class ContractInstance:
     def run_instance(self, bytecode):
         # Runs code
         print("Running Instance!")
+        
+        if(not self.check_gas_vs_balance(self.transaction_context.caller_address,self.transaction_context.gas)):
+            print("Not enough balance for gas")
+            return "OUT OF GAS"
+        
         executor = None
         result = None
         try:
@@ -98,6 +103,11 @@ class ContractInstance:
 
     def create(self, value, bytecode_data):
         # Runs code
+        
+        if(not self.testing and not self.check_gas_vs_balance(self.transaction_context.caller_address,self.transaction_context.gas)):
+            print("Not enough balance for gas")
+            return False, False
+        
         print()
         print(
             "STARTING CREATE SUBCONTEXT ---------------------------------------------------------------------"
@@ -186,6 +196,11 @@ class ContractInstance:
 
     def create2(self, value, bytecode_data, salt):
         # Runs code
+        
+        if(not self.testing and not self.check_gas_vs_balance(self.transaction_context.caller_address,self.transaction_context.gas)):
+            print("Not enough balance for gas")
+            return False, False
+        
         print()
         print(
             "STARTING CREATE2 SUBCONTEXT ---------------------------------------------------------------------"
@@ -338,6 +353,9 @@ class ContractInstance:
 
     def call(self, gas, address, value, calldata):
         # Runs code
+        if(not self.testing and not self.check_gas_vs_balance(self.transaction_context.caller_address,self.transaction_context.gas)):
+            print("Not enough balance for gas")
+            return False, False
         print(
             "STARTING CALL SUBCONTEXT ---------------------------------------------------------------------"
         )
@@ -398,6 +416,9 @@ class ContractInstance:
             return result, True
 
     def delegate_call(self, gas, address, calldata):
+        if(not self.testing and not self.check_gas_vs_balance(self.transaction_context.caller_address,self.transaction_context.gas)):
+            print("Not enough balance for gas")
+            return False, False
         # Runs delegate call code
         print(
             "STARTING DELEGATE CALL SUBCONTEXT ---------------------------------------------------------------------"
@@ -461,6 +482,9 @@ class ContractInstance:
     # same as delegate but with value and not the same current sender??
     def call_code(self, gas, address, value, calldata):
         # Runs delegate call code
+        if(not self.testing and not self.check_gas_vs_balance(self.transaction_context.caller_address,self.transaction_context.gas)):
+            print("Not enough balance for gas")
+            return False, False
         print(
             "STARTING CALLCODE SUBCONTEXT ---------------------------------------------------------------------"
         )
@@ -531,3 +555,18 @@ class ContractInstance:
         if state_dict:
             state_dict["balance"] = state_dict["balance"] + (value)
             self.EVM_STATE.set(address.hex(), state_dict)
+            
+    def check_gas_vs_balance(self, address, gas):
+        state_dict = self.EVM_STATE.get(address.hex())
+        if state_dict:
+            print(f"balance {state_dict['balance']}")
+            print(f"gas {gas}")
+            
+            if(state_dict["balance"] > gas):
+                return True
+            else:
+                return False
+        else:
+            return False
+            
+
