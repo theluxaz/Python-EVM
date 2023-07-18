@@ -15,12 +15,14 @@ max_ceiling = 2**256
 
 class Instructions:
 
-    def __init__(self,executor:object,storage:Optional[Storage]) -> None:
+    def __init__(self,executor:object,storage:Optional[dict]) -> None:
         self.stack = Stack()
         self.memory = Memory()
-        if storage:
-            self.storage = storage
+        print(f"INSTRUCTIONS STORAGE {storage}")
+        if storage :
+            self.storage = Storage(storage=storage)
         else:
+            print("INITIALIZING STORAGE ----------------===================================")
             self.storage = Storage()
         self.executor = executor
 
@@ -383,18 +385,21 @@ class Instructions:
     #30         2 
     def ADDRESS(self):
         #gets address of current execution account
-        return self.stack.push_bytes(self.executor.address)
+        return self.stack.push_bytes(bytearray.fromhex(self.executor.address))
 
     #OPCODE     GAS
     #31         100 hot 3200 cold  dynamic  
     def BALANCE(self):
         #Checks the balance of given address
         address = self.stack.pop_bytes()
-        external_contracts = self.executor.execution_context.external_contracts
+        EVM_STATE = self.executor.EVM_STATE
+        
         if(address):
             address = address.hex()
-            if(external_contracts.get(address) and external_contracts[address].get("balance")):
-                return self.stack.push_int(external_contracts[address]["balance"])
+            print(f"EVM ADDRESS {address}")
+            print(f"EVM VALUE {EVM_STATE.get(address)}")
+            if(EVM_STATE.get(address)):
+                return self.stack.push_int(EVM_STATE.get(address)["balance"])
             else:
                 return self.stack.push_int(0)
         else:
@@ -485,11 +490,13 @@ class Instructions:
     def EXTCODESIZE(self):
         #Get size of an account’s code
         address = self.stack.pop_bytes()
-        external_contracts = self.executor.execution_context.external_contracts
+        EVM_STATE = self.executor.EVM_STATE
         if(address):
             address = address.hex()
-            if(external_contracts.get(address) and external_contracts[address].get("bytecode")):
-                return self.stack.push_int(len(bytearray.fromhex(external_contracts[address]["bytecode"])))
+            if(EVM_STATE.get(address) ):
+                print(f"EVM ADDRESS {address}")
+                print(f"EVM VALUE {EVM_STATE.get(address)}")
+                return self.stack.push_int(len(bytearray.fromhex(EVM_STATE.get(address)["bytecode"])))
             else:
                 return self.stack.push_int(0)
         else:
@@ -504,11 +511,11 @@ class Instructions:
         mem_offset = self.stack.pop_int()
         bytecode_offset = self.stack.pop_int()
         size = self.stack.pop_int()
-        external_contracts = self.executor.execution_context.external_contracts
+        EVM_STATE = self.executor.EVM_STATE
         if(address):
             address = address.hex()
-            if(external_contracts.get(address) and external_contracts[address].get("bytecode")):
-                return self.memory.store(mem_offset,bytearray.fromhex(external_contracts[address]["bytecode"][bytecode_offset : bytecode_offset + size]))
+            if(EVM_STATE.get(address) ):
+                return self.memory.store(mem_offset,bytearray.fromhex(EVM_STATE.get(address)["bytecode"][bytecode_offset : bytecode_offset + size]))
             else:
                 return self.stack.push_int(0)
         else:
@@ -546,11 +553,11 @@ class Instructions:
     def EXTCODEHASH(self):
         #Get hash of an account’s code
         address = self.stack.pop_bytes()
-        external_contracts = self.executor.execution_context.external_contracts
+        EVM_STATE = self.executor.EVM_STATE
         if(address):
             address = address.hex()
-            if(external_contracts.get(address) and external_contracts[address].get("bytecode")):
-                hashed_value = keccak(bytearray.fromhex(external_contracts[address]["bytecode"]))
+            if(EVM_STATE.get(address) ):
+                hashed_value = keccak(bytearray.fromhex(EVM_STATE.get(address)["bytecode"]))
                 return self.stack.push_bytes(hashed_value)
             else:
                 return self.stack.push_int(0)
@@ -615,7 +622,7 @@ class Instructions:
     #47         5
     def SELFBALANCE(self):
         #Get balance of currently executing account
-        return self.stack.push_int(self.executor.execution_context.self_balance)
+        return self.stack.push_int(self.executor.self_state["balance"])
 
     #OPCODE     GAS
     #48         2  
@@ -1208,7 +1215,7 @@ class Instructions:
         size = self.stack.pop_int()
         
         data = self.memory.load(mem_offset,size)
-        log = {"address":"0x"+self.executor.address.hex(),"data":data.hex(),"topics":[]}
+        log = {"address":"0x"+self.executor.address,"data":data.hex(),"topics":[]}
         
         return self.executor.logs.append(log)
 
@@ -1226,7 +1233,7 @@ class Instructions:
         topic1 = "0x"+self.stack.pop_bytes().hex()
         
         data = self.memory.load(mem_offset,size)
-        log = {"address":"0x"+self.executor.address.hex(),"data":data.hex(),"topics":[topic1]}
+        log = {"address":"0x"+self.executor.address,"data":data.hex(),"topics":[topic1]}
         
         return self.executor.logs.append(log)
 
@@ -1244,7 +1251,7 @@ class Instructions:
         topic2 = "0x"+self.stack.pop_bytes().hex()
         
         data = self.memory.load(mem_offset,size)
-        log = {"address":"0x"+self.executor.address.hex(),"data":data.hex(),"topics":[topic1,topic2]}
+        log = {"address":"0x"+self.executor.address,"data":data.hex(),"topics":[topic1,topic2]}
         
         return self.executor.logs.append(log)
 
@@ -1263,7 +1270,7 @@ class Instructions:
         topic3 = "0x"+self.stack.pop_bytes().hex()
         
         data = self.memory.load(mem_offset,size)
-        log = {"address":"0x"+self.executor.address.hex(),"data":data.hex(),"topics":[topic1,topic2,topic3]}
+        log = {"address":"0x"+self.executor.address,"data":data.hex(),"topics":[topic1,topic2,topic3]}
         
         return self.executor.logs.append(log)
 
@@ -1283,7 +1290,7 @@ class Instructions:
         topic4 = "0x"+self.stack.pop_bytes().hex()
         
         data = self.memory.load(mem_offset,size)
-        log = {"address":"0x"+self.executor.address.hex(),"data":data.hex(),"topics":[topic1,topic2,topic3,topic4]}
+        log = {"address":"0x"+self.executor.address,"data":data.hex(),"topics":[topic1,topic2,topic3,topic4]}
         
         return self.executor.logs.append(log)
 
@@ -1308,10 +1315,10 @@ class Instructions:
         mem_offset = self.stack.pop_int()
         size = self.stack.pop_int()
         
-        external_contracts = self.executor.execution_context.external_contracts
-        this_address = self.executor.address.hex()
+        EVM_STATE = self.executor.EVM_STATE
+        this_address = self.executor.address
         #CHECK IF VALUE IS SUFFICIENT
-        if(value > external_contracts[this_address].get("balance") ):
+        if(value > EVM_STATE.get(this_address).get("balance") ):
             #NOT ENOUGH BALANCE TO TRANSFER
             print("Not enough balance to transfer.")
             self.executor.reverted = True
@@ -1351,10 +1358,10 @@ class Instructions:
         if(self.executor.static and value > 0):
             return self.INVALID()
         
-        external_contracts = self.executor.execution_context.external_contracts
-        this_address = self.executor.address.hex()
+        EVM_STATE = self.executor.EVM_STATE
+        this_address = self.executor.address
         #CHECK IF VALUE IS SUFFICIENT
-        if(value > external_contracts[this_address].get("balance") ):
+        if(value > EVM_STATE.get(this_address).get("balance") ):
             #NOT ENOUGH BALANCE TO TRANSFER
             print("Not enough balance to transfer.")
             self.executor.reverted = True
@@ -1392,10 +1399,10 @@ class Instructions:
         if(self.executor.static and value > 0):
             return self.INVALID()
             
-        external_contracts = self.executor.execution_context.external_contracts
-        this_address = self.executor.address.hex()
+        EVM_STATE = self.executor.EVM_STATE
+        this_address = self.executor.address
         #CHECK IF VALUE IS SUFFICIENT
-        if(value > external_contracts[this_address].get("balance") ):
+        if(value > EVM_STATE.get(this_address).get("balance") ):
             #NOT ENOUGH BALANCE TO TRANSFER
             print("Not enough balance to transfer.")
             self.executor.reverted = True
@@ -1468,10 +1475,10 @@ class Instructions:
         size = self.stack.pop_int()
         salt = self.stack.pop_bytes()
         
-        external_contracts = self.executor.execution_context.external_contracts
-        this_address = self.executor.address.hex()
+        EVM_STATE = self.executor.EVM_STATE
+        this_address = self.executor.address
         #CHECK IF VALUE IS SUFFICIENT
-        if(value > external_contracts[this_address].get("balance") ):
+        if(value > EVM_STATE.get(this_address).get("balance") ):
             #NOT ENOUGH BALANCE TO TRANSFER
             print("Not enough balance to transfer.")
             self.executor.reverted = True
@@ -1518,7 +1525,7 @@ class Instructions:
     #OPCODE     GAS
     #FD         0 dynamic   
     def REVERT(self):
-        #Halt execution reverting state changes but returning data and remaining gas
+        #Halt execution reverting EVM_STATE changes but returning data and remaining gas
         mem_offset = self.stack.pop_int()
         size = self.stack.pop_int()
         data = self.memory.load(mem_offset,size)
@@ -1544,15 +1551,16 @@ class Instructions:
         address = self.stack.pop_bytes()
         address = address.hex()
         #Send balance
-        external_contracts = self.executor.execution_context.external_contracts 
-        to_address = self.executor.address.hex()
+        EVM_STATE = self.executor.EVM_STATE 
+        to_address = self.executor.address
     
-        if(external_contracts.get(address) and external_contracts[address].get("balance")):
-            external_contracts[address]["balance"] = external_contracts[address]["balance"] + external_contracts[to_address]["balance"] 
+        if(EVM_STATE.get(address) and EVM_STATE.get(address).get("balance")):
+            item = EVM_STATE.get(address)
+            item["balance"] = EVM_STATE.get(to_address)["balance"] + EVM_STATE.get(address)["balance"] 
+            EVM_STATE.set(address,item)
         else:
-            external_contracts[address] = {"balance":external_contracts[to_address]["balance"] ,"bytecode":""} 
-        external_contracts[to_address]["balance"] = 0    
-        del external_contracts[to_address]
+            EVM_STATE.set(address,{"balance":EVM_STATE.get(address)["balance"] ,"bytecode":"","state":""} )
+        EVM_STATE.set(to_address,{})
         #SUCCESSFULLY DELETED CONTRACT
         return None 
     

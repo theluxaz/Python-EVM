@@ -1857,7 +1857,7 @@
       },
       "expect": {
         "stack": [
-          "0x200"
+          "0x9"
         ],
         "success": true
       },

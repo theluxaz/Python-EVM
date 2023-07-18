@@ -38,7 +38,7 @@ The main program loop is located at run.py. You can either run the provided EVM 
 or insert your own bytecode in hex in "hexcode" variable and set "TESTING" to False.
 
 Please edit the execution context data and transaction data in "run.py" as you see fit for each run. 
-The "ethereum network" is located in variable "external_contracts" in this scope for access.
+The "ethereum network" state is located in variables EVM_STATE.db and EVM_STATE_TESTING.db (for testing).
 
 
 <!-- ROADMAP -->

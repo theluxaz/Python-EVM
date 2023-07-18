@@ -1,17 +1,18 @@
+from typing import Optional
 
-# class Item:
-#     key:bytes(32)
-#     value:bytes(32)
 
 class Storage:
     storage = {}
     max_size_bytes = 32
     
-    def __init__(self) :
-        print("INITIALIZING STORAGE")
-        self.storage = {}
+    def __init__(self,storage:Optional[dict] = None) :
+        if(storage):
+            print("REMAKING STORAGE")
+            print(type(storage))
+            self.storage = storage
 
     def store(self, key: int, value:int):
+        print(f"Storage: {self.storage}")
         self.storage[key] = value
         print(f"Storage: {self.storage}")
         return value

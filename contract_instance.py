@@ -1,14 +1,17 @@
 from execution_context import ExecutionContext
 from transaction_context import TransactionContext
 from executor import Executor
+from state import State
 from eth_hash.auto import keccak
 import rlp
+import json
 
 class ContractInstance:
 
-    def __init__(self,execution_context:ExecutionContext,transaction_context:TransactionContext) -> None:
+    def __init__(self,execution_context:ExecutionContext,transaction_context:TransactionContext,state:State) -> None:
         self.execution_context=execution_context
         self.transaction_context=transaction_context
+        self.EVM_STATE = state
         self.return_data = None
     
     def run_instance(self,bytecode):
@@ -16,13 +19,15 @@ class ContractInstance:
         print("Running Instance!")
         executor = None
         result = None
-        try:
-            executor = Executor(self,bytecode=bytecode,execution_context=self.execution_context,transaction_context=self.transaction_context)
-            result = executor.run()
-        except Exception as error:
-            print(error)
-            executor.revert_transaction()
+        # try:
+        executor = Executor(self,bytecode=bytecode,execution_context=self.execution_context,transaction_context=self.transaction_context,EVM_STATE=self.EVM_STATE)
+        result = executor.run()
+        # except Exception as error:
+        #     print(error)
+        #     executor.revert_transaction()
+        executor.finish_transaction()
         executor.print_logs()
+        self.EVM_STATE.save()
         return result
     
     def run_instance_test(self,bytecode):
@@ -30,13 +35,13 @@ class ContractInstance:
         print("Running Instance!")
         executor = None
         result = None
-        try:
-            executor = Executor(self,bytecode=bytecode,execution_context=self.execution_context,transaction_context=self.transaction_context)
-            result = executor.run()
-        except Exception as error:
-            print(error)
-            executor.revert_transaction()
-                
+        # try:
+        executor = Executor(self,bytecode=bytecode,execution_context=self.execution_context,transaction_context=self.transaction_context,EVM_STATE=self.EVM_STATE)
+        result = executor.run()
+        # except Exception as error:
+        #     print(error)
+        #     executor.revert_transaction()
+        executor.finish_transaction()
         executor.print_logs()
         if( executor and executor.reverted == False and executor.invalid == False):
             if(list(executor.instructions.stack.stack)):
@@ -58,12 +63,13 @@ class ContractInstance:
         
         executor = None
         result = None
-        try:
-            executor = Executor(self,bytecode=bytecode_data,execution_context=self.execution_context,transaction_context=transaction_context_call)
-            result = executor.run()
-        except Exception as error:
-            print(error)
-            executor.revert_transaction()
+        # try:
+        executor = Executor(self,bytecode=bytecode_data,execution_context=self.execution_context,transaction_context=transaction_context_call,EVM_STATE=self.EVM_STATE)
+        result = executor.run()
+        # except Exception as error:
+        #     print(error)
+        #     executor.revert_transaction()
+        executor.consume_gas()
         executor.update_nonce()
         
         print(f"Adding return DATA : {result} -----------------------------")
@@ -75,12 +81,12 @@ class ContractInstance:
             return False,False
         elif(executor.finished):
             if(result):
-                self.execution_context.external_contracts[new_address.hex()] = {"balance":value,"bytecode":result.hex()}
+                self.EVM_STATE.set(new_address.hex(),{"balance":value,"bytecode":result.hex(),"state":executor.instructions.storage.storage})
             else:
-                self.execution_context.external_contracts[new_address.hex()] = {"balance":value,"bytecode":""}
+                self.EVM_STATE.set(new_address.hex(),{"balance":value,"bytecode":"","state":executor.instructions.storage.storage})
             return new_address,True
         else:
-            self.execution_context.external_contracts[new_address.hex()] = {"balance":value,"bytecode":result.hex()}
+            self.EVM_STATE.set(new_address.hex(),{"balance":value,"bytecode":result.hex(),"state":executor.instructions.storage.storage})
             return new_address,True
     
     def create2(self,value,bytecode_data,salt):
@@ -94,11 +100,12 @@ class ContractInstance:
         executor = None
         result = None
         try:
-            executor = Executor(self,bytecode=bytecode_data,execution_context=self.execution_context,transaction_context=transaction_context_call)
+            executor = Executor(self,bytecode=bytecode_data,execution_context=self.execution_context,transaction_context=transaction_context_call,EVM_STATE=self.EVM_STATE)
             result = executor.run()
         except Exception as error:
             print(error)
             executor.revert_transaction()
+        executor.consume_gas()
         executor.update_nonce()
         self.return_data = result
         executor.print_logs()
@@ -109,19 +116,19 @@ class ContractInstance:
             return False,False
         elif(executor.finished):
             if(result):
-                self.execution_context.external_contracts[new_address.hex()] = {"balance":value,"bytecode":result.hex()}
+                self.EVM_STATE.set(new_address.hex(),{"balance":value,"bytecode":result.hex(),"state":executor.instructions.storage.storage})
             else:
-                self.execution_context.external_contracts[new_address.hex()] = {"balance":value,"bytecode":""}
+                self.EVM_STATE.set(new_address.hex(),{"balance":value,"bytecode":"","state":executor.instructions.storage.storage})
             return new_address,True
         else:
-            self.execution_context.external_contracts[new_address.hex()] = {"balance":value,"bytecode":result.hex()}
+            self.EVM_STATE.set(new_address.hex(),{"balance":value,"bytecode":"","state":executor.instructions.storage.storage})
             return new_address,True
     
     def static_call(self,gas,address,calldata):
         #Runs code
         print("STARTING STATIC CALL SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         try:
-            external_bytecode = bytearray.fromhex(self.execution_context.external_contracts[address]["bytecode"])
+            external_bytecode = bytearray.fromhex(self.EVM_STATE.get(address)["bytecode"])
         except:
             print("Address not found")
             return False,False
@@ -131,7 +138,7 @@ class ContractInstance:
         executor = None
         result = None
         try:
-            executor = Executor(self,bytecode=external_bytecode,execution_context=self.execution_context,transaction_context=transaction_context_call,static=True)
+            executor = Executor(self,bytecode=external_bytecode,execution_context=self.execution_context,transaction_context=transaction_context_call,static=True,EVM_STATE=self.EVM_STATE)
             result = executor.run()
         except Exception as error:
             print(error)
@@ -153,7 +160,7 @@ class ContractInstance:
         #Runs code
         print("STARTING CALL SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         try:
-            external_bytecode = bytearray.fromhex(self.execution_context.external_contracts[address]["bytecode"])
+            external_bytecode = bytearray.fromhex(self.EVM_STATE.get(address)["bytecode"])
         except:
             print("Address not found")
             return False,False
@@ -163,11 +170,12 @@ class ContractInstance:
         executor = None
         result = None
         try:
-            executor = Executor(self,bytecode=external_bytecode,execution_context=self.execution_context,transaction_context=transaction_context_call)
+            executor = Executor(self,bytecode=external_bytecode,execution_context=self.execution_context,transaction_context=transaction_context_call,EVM_STATE=self.EVM_STATE)
             result = executor.run()
         except Exception as error:
             print(error)
             executor.revert_transaction()
+        executor.finish_transaction()
 
         executor.update_nonce()
         self.return_data = result
@@ -185,7 +193,7 @@ class ContractInstance:
         #Runs delegate call code
         print("STARTING DELEGATE CALL SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         try:
-            external_bytecode = bytearray.fromhex(self.execution_context.external_contracts[address]["bytecode"])
+            external_bytecode = bytearray.fromhex(self.EVM_STATE.get(address)["bytecode"])
         except:
             print("Address not found")
             return False,False
@@ -195,12 +203,12 @@ class ContractInstance:
         executor = None
         result = None
         try:
-            executor = Executor(self,bytecode=external_bytecode,execution_context=self.execution_context,transaction_context=transaction_context_call,storage=storage)
+            executor = Executor(self,bytecode=external_bytecode,execution_context=self.execution_context,transaction_context=transaction_context_call,EVM_STATE=self.EVM_STATE)
             result = executor.run()
         except Exception as error:
             print(error)
             executor.revert_transaction()
-
+        executor.finish_transaction()
         executor.update_nonce()
         self.return_data = result
         executor.print_logs()
@@ -219,7 +227,7 @@ class ContractInstance:
         #Runs delegate call code
         print("STARTING CALLCODE SUBCONTEXT --------------------------------------------------------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         try:
-            external_bytecode = bytearray.fromhex(self.execution_context.external_contracts[address]["bytecode"])
+            external_bytecode = bytearray.fromhex(self.EVM_STATE.get(address)["bytecode"])
         except:
             print("Address not found")
             return False,False
@@ -229,12 +237,12 @@ class ContractInstance:
         executor = None
         result = None
         try:
-            executor = Executor(self,bytecode=external_bytecode,execution_context=self.execution_context,transaction_context=transaction_context_call,storage=storage)
+            executor = Executor(self,bytecode=external_bytecode,execution_context=self.execution_context,transaction_context=transaction_context_call,EVM_STATE=self.EVM_STATE)
             result = executor.run()
         except Exception as error:
             print(error)
             executor.revert_transaction()
-
+        executor.finish_transaction()
         executor.update_nonce()
         self.return_data = result
         executor.print_logs()
@@ -250,3 +258,6 @@ class ContractInstance:
         
     def get_return_data(self):
         return self.return_data
+    
+    def update_state(self,execution_context):
+        self.execution_context = execution_context

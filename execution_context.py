@@ -1,7 +1,6 @@
 from external_contract import ExternalContract
 
 
-
 class ExecutionContext:
 
     def __init__(self, block_hash: bytearray, 
@@ -11,9 +10,7 @@ class ExecutionContext:
                  timestamp: int,
                  gas_limit:int,
                  chain_id:int, 
-                 base_fee:int,
-                 self_balance:int,
-                 external_contracts:dict
+                 base_fee:int
                  ) -> None:
                  
         self.block_hash = bytearray.fromhex(block_hash)
@@ -24,6 +21,7 @@ class ExecutionContext:
         self.gas_limit = gas_limit
         self.chain_id = chain_id
         self.base_fee = base_fee
-        self.self_balance = self_balance
-        self.external_contracts = external_contracts
+
+        
+        
         

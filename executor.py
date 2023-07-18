@@ -4,18 +4,26 @@ from memory import Memory
 from instructions import Instructions
 from execution_context import ExecutionContext
 from transaction_context import TransactionContext
+from state import State
 from opcode_list import opcodes_list
 from storage import Storage
+import json
 
 class Executor:
 
-    def __init__(self,contract_instance, bytecode:bytearray,execution_context:ExecutionContext,transaction_context:TransactionContext,storage:Optional[Storage] = None,static:Optional[bool] = False) -> None:
+    def __init__(self,contract_instance, bytecode:bytearray,execution_context:ExecutionContext,transaction_context:TransactionContext,EVM_STATE:State,static:Optional[bool] = False) -> None:
+        self.address = transaction_context.to_address.hex()
+        self.self_state = EVM_STATE.get(transaction_context.to_address.hex())
+        print(f"SELF STATE IS {self.self_state}")
         self.contract_instance = contract_instance
-        self.instructions = Instructions(self,storage)
+        if(self.self_state):
+            self.instructions = Instructions(self,self.self_state["state"])
+        else:
+            self.instructions = Instructions(self,False)
         self.bytecode = bytecode
         self.execution_context=execution_context
         self.transaction_context=transaction_context
-        self.address = transaction_context.to_address
+        self.EVM_STATE=EVM_STATE
         self.gas_remaining = transaction_context.gas
         self.gas_starting = transaction_context.gas
         self.return_data = None
@@ -68,9 +76,18 @@ class Executor:
       
     def revert_transaction(self):
         self.transaction_context.gas = self.gas_remaining
+        
+    def consume_gas(self):
+        self.transaction_context.gas = self.gas_remaining
 
     def finish_transaction(self):
         self.transaction_context.gas = self.gas_remaining
+        if(not self.static):
+            print("SAVING STATE -------------------------------------------------------------------------------------------------------------------")
+            state_dict = self.EVM_STATE.get(self.address)
+            if(state_dict):
+                state_dict["state"] = self.instructions.storage.storage
+                self.EVM_STATE.set(self.address,state_dict)
             
     def update_nonce(self):
         self.transaction_context.nonce = self.transaction_context.nonce+1
