@@ -6,4 +6,8 @@ SimpleStorage_sol_*
 
 __pycache__/
 __pycache__
+.vscode
+.vscode/
+.hypothesis
+.hypothesis/
 *.pyc 
